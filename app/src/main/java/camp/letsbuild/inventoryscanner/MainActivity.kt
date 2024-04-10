@@ -1,5 +1,6 @@
 package camp.letsbuild.inventoryscanner
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -19,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import camp.letsbuild.inventoryscanner.ui.theme.InventoryScannerTheme
+import camp.letsbuild.inventoryscanner.ui.theme.NewItemActivity
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanIntentResult
 import com.journeyapps.barcodescanner.ScanOptions
@@ -34,7 +36,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val inventoryApi = getInventoryApiInstance("http://10.23.1.200:5000")
+        val inventoryApi = getInventoryApiInstance()
         val barcodeScannerLauncher: ActivityResultLauncher<ScanOptions> = this.registerForActivityResult(ScanContract()) {
                 scannedBarcode: ScanIntentResult ->
             run {
@@ -56,10 +58,25 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        val scannerForNewItemActivity = scannerForNewItemResultLauncher(this)
         setContent {
             InventoryScannerTheme {
                 // A surface container using the 'background' color from the theme
-                ScannerApp(barcodeScannerLauncher)
+                ScannerApp(scannerForNewItemActivity)
+            }
+        }
+    }
+}
+
+fun scannerForNewItemResultLauncher(componentActivity: ComponentActivity): ActivityResultLauncher<ScanOptions> {
+    return componentActivity.registerForActivityResult(ScanContract()) { scannedBarcode: ScanIntentResult ->
+        run {
+            if (scannedBarcode.contents == null) {
+                Toast.makeText(componentActivity, "Cancelled", Toast.LENGTH_LONG).show();
+            } else {
+                val intent = Intent(componentActivity, NewItemActivity::class.java)
+                intent.putExtra("barcode_id", scannedBarcode.contents)
+                componentActivity.startActivity(intent)
             }
         }
     }

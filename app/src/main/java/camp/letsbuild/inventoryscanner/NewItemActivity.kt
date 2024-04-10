@@ -1,4 +1,4 @@
-package camp.letsbuild.inventoryscanner.ui.theme
+package camp.letsbuild.inventoryscanner
 
 import android.content.Intent
 import android.net.Uri
@@ -10,8 +10,6 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
-import camp.letsbuild.inventoryscanner.getInventoryApiInstance
-import camp.letsbuild.inventoryscanner.uploadItemToInventory
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback

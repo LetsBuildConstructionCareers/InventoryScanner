@@ -28,7 +28,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.theme.NewItemActivity"
+            android:name=".NewItemActivity"
             android:exported="true"
             android:label="InventoryScanner"
             android:theme="@style/Theme.InventoryScanner">

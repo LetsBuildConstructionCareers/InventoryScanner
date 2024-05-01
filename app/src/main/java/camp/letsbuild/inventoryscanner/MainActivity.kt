@@ -27,46 +27,47 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val scannerForNewItemActivity = scannerForNewItemResultLauncher(this)
         val scannerForDisplayItemActivity = scannerForDisplayItemResultLauncher(this)
+        val scannerForAddItemsToContainerActivity = scannerForNewActivity(this, AddItemsToContainerActivity::class.java)
+        val scannerForInitialBadgeCheckInActivity = scannerForNewActivity(this, InitialBadgeCheckInActivity::class.java)
         setContent {
             InventoryScannerTheme {
                 // A surface container using the 'background' color from the theme
-                ScannerApp(scannerForNewItemActivity, scannerForDisplayItemActivity)
+                ScannerApp(scannerForNewItemActivity, scannerForDisplayItemActivity, scannerForAddItemsToContainerActivity, scannerForInitialBadgeCheckInActivity)
             }
         }
     }
 }
 
 fun scannerForNewItemResultLauncher(componentActivity: ComponentActivity): ActivityResultLauncher<ScanOptions> {
+    return scannerForNewActivity(componentActivity, NewItemActivity::class.java)
+}
+
+fun scannerForDisplayItemResultLauncher(componentActivity: ComponentActivity): ActivityResultLauncher<ScanOptions> {
+    return scannerForNewActivity(componentActivity, DisplayItemActivity::class.java)
+}
+
+fun scannerForNewActivity(componentActivity: ComponentActivity, intent: Intent, barcodeId: String): ActivityResultLauncher<ScanOptions> {
     return componentActivity.registerForActivityResult(ScanContract()) { scannedBarcode: ScanIntentResult ->
         run {
             if (scannedBarcode.contents == null) {
                 Toast.makeText(componentActivity, "Cancelled", Toast.LENGTH_LONG).show();
             } else {
-                val intent = Intent(componentActivity, NewItemActivity::class.java)
-                intent.putExtra("barcode_id", scannedBarcode.contents)
+                intent.putExtra(barcodeId, scannedBarcode.contents)
                 componentActivity.startActivity(intent)
             }
         }
     }
 }
 
-fun scannerForDisplayItemResultLauncher(componentActivity: ComponentActivity): ActivityResultLauncher<ScanOptions> {
-    return componentActivity.registerForActivityResult(ScanContract()) { scannedBarcode: ScanIntentResult ->
-        run {
-            if (scannedBarcode.contents == null) {
-                Toast.makeText(componentActivity, "Cancelled", Toast.LENGTH_LONG).show();
-            } else {
-                val intent = Intent(componentActivity, DisplayItemActivity::class.java)
-                intent.putExtra("barcode_id", scannedBarcode.contents)
-                componentActivity.startActivity(intent)
-            }
-        }
-    }
+fun <T : ComponentActivity> scannerForNewActivity(componentActivity: ComponentActivity, activityClass: Class<T>): ActivityResultLauncher<ScanOptions> {
+    return scannerForNewActivity(componentActivity, Intent(componentActivity, activityClass), "barcode_id")
 }
 
 @Composable
 fun ScanUi(scannerForNewItem: ActivityResultLauncher<ScanOptions>,
            scannerForDisplayItem: ActivityResultLauncher<ScanOptions>,
+           scannerForAddItemsToContainerActivity: ActivityResultLauncher<ScanOptions>,
+           scannerForInitialBadgeCheckInActivity: ActivityResultLauncher<ScanOptions>,
            modifier: Modifier = Modifier
                .fillMaxSize()
                .wrapContentSize(Alignment.Center)) {
@@ -74,14 +75,37 @@ fun ScanUi(scannerForNewItem: ActivityResultLauncher<ScanOptions>,
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-        Button(onClick = { scannerForDisplayItem.launch(ScanOptions()) }) {
-            Text(text = "Scan Existing Item")
-        }
         Button(onClick = {
             scannerForNewItem.launch(ScanOptions())
         }) {
             Text("Scan New Item")
+        }
+        Button(onClick = {scannerForAddItemsToContainerActivity.launch(ScanOptions())}) {
+            Text("Add Item to Container")
+        }
+        Button(onClick = { /*TODO*/ }) {
+            Text("Remove Item from Container")
+        }
+        Button(onClick = { /*TODO*/ }) {
+            Text("Add Item or Container to Vehicle")
+        }
+        Button(onClick = { /*TODO*/ }) {
+            Text("Tool Shed - Check-Out")
+        }
+        Button(onClick = { /*TODO*/ }) {
+            Text("Tool Shed - Check-In")
+        }
+        Button(onClick = { scannerForDisplayItem.launch(ScanOptions()) }) {
+            Text(text = "Scan Existing Item")
+        }
+        Button(onClick = { scannerForInitialBadgeCheckInActivity.launch(ScanOptions()) }) {
+            Text("Initial Badge Check-In")
+        }
+        Button(onClick = { /*TODO*/ }) {
+            Text("Badge Check-In")
+        }
+        Button(onClick = { /*TODO*/ }) {
+            Text("Badge Check-Out")
         }
     }
 }
@@ -89,8 +113,13 @@ fun ScanUi(scannerForNewItem: ActivityResultLauncher<ScanOptions>,
 //@Preview(showBackground = true)
 @Composable
 fun ScannerApp(scannerForNewItem: ActivityResultLauncher<ScanOptions>,
-               scannerForDisplayItem: ActivityResultLauncher<ScanOptions>) {
+               scannerForDisplayItem: ActivityResultLauncher<ScanOptions>,
+               scannerForAddItemsToContainerActivity: ActivityResultLauncher<ScanOptions>,
+               scannerForInitialBadgeCheckInActivity: ActivityResultLauncher<ScanOptions>) {
     InventoryScannerTheme {
-        ScanUi(scannerForNewItem, scannerForDisplayItem)
+        ScanUi(scannerForNewItem,
+            scannerForDisplayItem,
+            scannerForAddItemsToContainerActivity,
+            scannerForInitialBadgeCheckInActivity)
     }
 }

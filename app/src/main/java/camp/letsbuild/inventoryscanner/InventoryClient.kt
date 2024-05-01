@@ -16,6 +16,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.GET
+import retrofit2.http.Headers
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
@@ -31,6 +32,14 @@ data class Item(
     val name: String,
 )
 
+data class User(
+    val barcode_id: String,
+    val name: String,
+    val company: String,
+    val picture_path: String,
+    val description: String,
+)
+
 interface InventoryApi {
     @GET("/inventory/api/v1.0/items/{barcode_id}")
     fun getItem(@Path("barcode_id") barcodeId: String): Call<Item>
@@ -44,8 +53,20 @@ interface InventoryApi {
                    @Part("name") name: RequestBody,
                    @Part file: MultipartBody.Part): Call<ResponseBody>
 
+    @POST("/inventory/api/v1.0/containers/{container_id}")
+    fun addItemsToContainer(@Path("container_id") containerId: String, @Body itemIds: List<String>): Call<ResponseBody>
+
     @GET("/inventory/api/v1.0/items")
     fun getItems(): Call<List<Item>>
+
+    @GET("/inventory/api/v1.0/users/{user_id}")
+    @Headers("Cache-Control: no-cache")
+    fun getUser(@Path("user_id") userId: String): Call<User>
+
+    @Multipart
+    @POST("/inventory/api/v1.0/user-picture/{user_id}")
+    fun uploadUserPicture(@Path("user_id") userId: String,
+                          @Part file: MultipartBody.Part): Call<ResponseBody>
 }
 
 fun getInventoryApiInstance(url: String = INVENTORY_SERVER): InventoryApi {
@@ -62,4 +83,10 @@ fun uploadItemToInventory(inventoryApi: InventoryApi, barcodeId: String, name: S
     val body = MultipartBody.Part.createFormData("picture", picture.name, requestBody)
     val nameBody = name.toRequestBody("text/plain".toMediaTypeOrNull())
     return inventoryApi.uploadItem(barcodeId, nameBody, body)
+}
+
+fun uploadUserPictureToInventory(inventoryApi: InventoryApi, userId: String, picture: File): Call<ResponseBody> {
+    val requestBody = picture.asRequestBody("image/*".toMediaTypeOrNull())
+    val body = MultipartBody.Part.createFormData("picture", picture.name, requestBody)
+    return inventoryApi.uploadUserPicture(userId, body)
 }

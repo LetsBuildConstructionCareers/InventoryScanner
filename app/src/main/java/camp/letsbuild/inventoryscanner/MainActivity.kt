@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             InventoryScannerTheme {
                 // A surface container using the 'background' color from the theme
-                ScannerApp(scannerForNewItemActivity, scannerForDisplayItemActivity, scannerForAddItemsToContainerActivity, scannerForInitialBadgeCheckInActivity)
+                ScannerApp(this, scannerForNewItemActivity, scannerForDisplayItemActivity, scannerForAddItemsToContainerActivity, scannerForInitialBadgeCheckInActivity)
             }
         }
     }
@@ -64,7 +64,8 @@ fun <T : ComponentActivity> scannerForNewActivity(componentActivity: ComponentAc
 }
 
 @Composable
-fun ScanUi(scannerForNewItem: ActivityResultLauncher<ScanOptions>,
+fun ScanUi(componentActivity: ComponentActivity,
+           scannerForNewItem: ActivityResultLauncher<ScanOptions>,
            scannerForDisplayItem: ActivityResultLauncher<ScanOptions>,
            scannerForAddItemsToContainerActivity: ActivityResultLauncher<ScanOptions>,
            scannerForInitialBadgeCheckInActivity: ActivityResultLauncher<ScanOptions>,
@@ -89,7 +90,10 @@ fun ScanUi(scannerForNewItem: ActivityResultLauncher<ScanOptions>,
         Button(onClick = { /*TODO*/ }) {
             Text("Add Item or Container to Vehicle")
         }
-        Button(onClick = { /*TODO*/ }) {
+        Button(onClick = {
+            val intent = Intent(componentActivity, ToolshedCheckoutActivity::class.java)
+            componentActivity.startActivity(intent)
+        }) {
             Text("Tool Shed - Check-Out")
         }
         Button(onClick = { /*TODO*/ }) {
@@ -112,12 +116,14 @@ fun ScanUi(scannerForNewItem: ActivityResultLauncher<ScanOptions>,
 
 //@Preview(showBackground = true)
 @Composable
-fun ScannerApp(scannerForNewItem: ActivityResultLauncher<ScanOptions>,
+fun ScannerApp(componentActivity: ComponentActivity,
+               scannerForNewItem: ActivityResultLauncher<ScanOptions>,
                scannerForDisplayItem: ActivityResultLauncher<ScanOptions>,
                scannerForAddItemsToContainerActivity: ActivityResultLauncher<ScanOptions>,
                scannerForInitialBadgeCheckInActivity: ActivityResultLauncher<ScanOptions>) {
     InventoryScannerTheme {
-        ScanUi(scannerForNewItem,
+        ScanUi(componentActivity,
+            scannerForNewItem,
             scannerForDisplayItem,
             scannerForAddItemsToContainerActivity,
             scannerForInitialBadgeCheckInActivity)

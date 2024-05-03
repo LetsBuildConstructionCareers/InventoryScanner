@@ -68,6 +68,36 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".ToolshedCheckoutActivity"
+            android:exported="true"
+            android:label="InventoryScanner"
+            android:theme="@style/Theme.InventoryScanner">
+            <intent-filter>
+                <action android:name="android.intent.action.RUN"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ToolshedCheckoutItemForUserActivity"
+            android:exported="true"
+            android:label="InventoryScanner"
+            android:theme="@style/Theme.InventoryScanner">
+            <intent-filter>
+                <action android:name="android.intent.action.RUN"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ToolshedCheckoutItemFinalizeActivity"
+            android:exported="true"
+            android:label="InventoryScanner"
+            android:theme="@style/Theme.InventoryScanner">
+            <intent-filter>
+                <action android:name="android.intent.action.RUN"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".InitialBadgeCheckInActivity"
             android:exported="true"
             android:label="InventoryScanner"

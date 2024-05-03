@@ -40,6 +40,17 @@ data class User(
     val description: String,
 )
 
+data class ToolshedCheckout(
+    val item_id: String,
+    val user_id: String,
+)
+
+data class ToolshedCheckin(
+    val itemId: String,
+    val userId: String,
+    val description: String
+)
+
 interface InventoryApi {
     @GET("/inventory/api/v1.0/items/{barcode_id}")
     fun getItem(@Path("barcode_id") barcodeId: String): Call<Item>
@@ -59,9 +70,18 @@ interface InventoryApi {
     @GET("/inventory/api/v1.0/items")
     fun getItems(): Call<List<Item>>
 
+    @POST("/inventory/api/v1.0/toolshed-checkout")
+    fun checkoutFromToolshed(@Body toolshedCheckout: ToolshedCheckout): Call<ResponseBody>
+
+    @POST("/inventory/api/v1.0/toolshed-checkin")
+    fun checkinToToolshed(@Body toolshedCheckin: ToolshedCheckin): Call<ResponseBody>
+
     @GET("/inventory/api/v1.0/users/{user_id}")
     @Headers("Cache-Control: no-cache")
     fun getUser(@Path("user_id") userId: String): Call<User>
+
+    @GET("/inventory/api/v1.0/user-picture/{user_id}")
+    fun getUserPicture(@Path("user_id") userId: String): Call<ResponseBody>
 
     @Multipart
     @POST("/inventory/api/v1.0/user-picture/{user_id}")
@@ -75,6 +95,10 @@ fun getInventoryApiInstance(url: String = INVENTORY_SERVER): InventoryApi {
 
 fun getItemPictureUrl(barcodeId: String): String {
     return Uri.parse(INVENTORY_SERVER).buildUpon().appendPath("/inventory/api/v1.0/item-picture/").appendPath(barcodeId).toString()
+}
+
+fun getUserPictureUrl(barcodeId: String): String {
+    return Uri.parse(INVENTORY_SERVER).buildUpon().appendPath("/inventory/api/v1.0/user-picture/").appendPath(barcodeId).toString()
 }
 
 fun uploadItemToInventory(inventoryApi: InventoryApi, barcodeId: String, name: String, picture: File): Call<ResponseBody> {

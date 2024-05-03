@@ -14,6 +14,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.Field
 import retrofit2.http.GET
 import retrofit2.http.Headers
@@ -64,8 +65,14 @@ interface InventoryApi {
                    @Part("name") name: RequestBody,
                    @Part file: MultipartBody.Part): Call<ResponseBody>
 
+    @GET("/inventory/api/v1.0/containers/{container_id}")
+    fun getItemsInContainer(@Path("container_id") containerId: String): Call<List<Item>>
+
     @POST("/inventory/api/v1.0/containers/{container_id}")
     fun addItemsToContainer(@Path("container_id") containerId: String, @Body itemIds: List<String>): Call<ResponseBody>
+
+    @DELETE("/inventory/api/v1.0/containers/{container_id}/{item_id}")
+    fun removeItemFromContainer(@Path("container_id") containerId: String, @Path("item_id") itemId: String): Call<ResponseBody>
 
     @GET("/inventory/api/v1.0/items")
     fun getItems(): Call<List<Item>>

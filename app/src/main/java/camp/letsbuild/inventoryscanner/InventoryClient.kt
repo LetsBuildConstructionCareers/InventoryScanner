@@ -65,6 +65,9 @@ interface InventoryApi {
                    @Part("name") name: RequestBody,
                    @Part file: MultipartBody.Part): Call<ResponseBody>
 
+    @GET("/inventory/api/v1.0/item-parent/{barcode_id}")
+    fun getParentOfItem(@Path("barcode_id") barcodeId: String): Call<String>
+
     @GET("/inventory/api/v1.0/containers/{container_id}")
     fun getItemsInContainer(@Path("container_id") containerId: String): Call<List<Item>>
 

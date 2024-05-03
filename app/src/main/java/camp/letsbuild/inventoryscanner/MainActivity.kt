@@ -28,11 +28,17 @@ class MainActivity : ComponentActivity() {
         val scannerForNewItemActivity = scannerForNewItemResultLauncher(this)
         val scannerForDisplayItemActivity = scannerForDisplayItemResultLauncher(this)
         val scannerForViewItemsInContainerActivity = scannerForNewActivity(this, ViewItemsInContainerActivity::class.java)
+        val scannerForRemoveItemFromContainerActivity = scannerForNewActivity(this, RemoveItemFromContainerActivity::class.java)
         val scannerForInitialBadgeCheckInActivity = scannerForNewActivity(this, InitialBadgeCheckInActivity::class.java)
         setContent {
             InventoryScannerTheme {
                 // A surface container using the 'background' color from the theme
-                ScannerApp(this, scannerForNewItemActivity, scannerForDisplayItemActivity, scannerForViewItemsInContainerActivity, scannerForInitialBadgeCheckInActivity)
+                ScannerApp(this,
+                    scannerForNewItemActivity,
+                    scannerForDisplayItemActivity,
+                    scannerForViewItemsInContainerActivity,
+                    scannerForRemoveItemFromContainerActivity,
+                    scannerForInitialBadgeCheckInActivity)
             }
         }
     }
@@ -68,6 +74,7 @@ fun ScanUi(componentActivity: ComponentActivity,
            scannerForNewItem: ActivityResultLauncher<ScanOptions>,
            scannerForDisplayItem: ActivityResultLauncher<ScanOptions>,
            scannerForViewItemsInContainerActivity: ActivityResultLauncher<ScanOptions>,
+           scannerForRemoveItemFromContainerActivity: ActivityResultLauncher<ScanOptions>,
            scannerForInitialBadgeCheckInActivity: ActivityResultLauncher<ScanOptions>,
            modifier: Modifier = Modifier
                .fillMaxSize()
@@ -87,7 +94,7 @@ fun ScanUi(componentActivity: ComponentActivity,
         }) {
             Text("Add Item to Container")
         }
-        Button(onClick = { /*TODO*/ }) {
+        Button(onClick = { scannerForRemoveItemFromContainerActivity.launch(ScanOptions()) }) {
             Text("Remove Item from Container")
         }
         Button(onClick = { scannerForViewItemsInContainerActivity.launch(ScanOptions()) }) {
@@ -131,16 +138,20 @@ fun ScanUi(componentActivity: ComponentActivity,
 
 //@Preview(showBackground = true)
 @Composable
-fun ScannerApp(componentActivity: ComponentActivity,
-               scannerForNewItem: ActivityResultLauncher<ScanOptions>,
-               scannerForDisplayItem: ActivityResultLauncher<ScanOptions>,
-               scannerForViewItemsInContainerActivity: ActivityResultLauncher<ScanOptions>,
-               scannerForInitialBadgeCheckInActivity: ActivityResultLauncher<ScanOptions>) {
+fun ScannerApp(
+    componentActivity: ComponentActivity,
+    scannerForNewItem: ActivityResultLauncher<ScanOptions>,
+    scannerForDisplayItem: ActivityResultLauncher<ScanOptions>,
+    scannerForViewItemsInContainerActivity: ActivityResultLauncher<ScanOptions>,
+    scannerForRemoveItemFromContainerActivity: ActivityResultLauncher<ScanOptions>,
+    scannerForInitialBadgeCheckInActivity: ActivityResultLauncher<ScanOptions>
+) {
     InventoryScannerTheme {
         ScanUi(componentActivity,
             scannerForNewItem,
             scannerForDisplayItem,
             scannerForViewItemsInContainerActivity,
+            scannerForRemoveItemFromContainerActivity,
             scannerForInitialBadgeCheckInActivity)
     }
 }

@@ -108,6 +108,7 @@ fun InitialBadgeCheckInUI(componentActivity: ComponentActivity,
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                     Log.i(TAG, response.message())
                     Toast.makeText(componentActivity, response.message(), Toast.LENGTH_LONG).show();
+                    componentActivity.finish()
                 }
 
                 override fun onFailure(call: Call<ResponseBody>, t: Throwable) {

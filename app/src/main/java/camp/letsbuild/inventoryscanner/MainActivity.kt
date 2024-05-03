@@ -30,6 +30,8 @@ class MainActivity : ComponentActivity() {
         val scannerForViewItemsInContainerActivity = scannerForNewActivity(this, ViewItemsInContainerActivity::class.java)
         val scannerForRemoveItemFromContainerActivity = scannerForNewActivity(this, RemoveItemFromContainerActivity::class.java)
         val scannerForInitialBadgeCheckInActivity = scannerForNewActivity(this, InitialBadgeCheckInActivity::class.java)
+        val scannerForCheckinUserActivity = scannerForNewActivity(this, CheckinUserActivity::class.java)
+        val scannerForCheckoutUserActivity = scannerForNewActivity(this, CheckoutUserActivity::class.java)
         setContent {
             InventoryScannerTheme {
                 // A surface container using the 'background' color from the theme
@@ -38,7 +40,9 @@ class MainActivity : ComponentActivity() {
                     scannerForDisplayItemActivity,
                     scannerForViewItemsInContainerActivity,
                     scannerForRemoveItemFromContainerActivity,
-                    scannerForInitialBadgeCheckInActivity)
+                    scannerForInitialBadgeCheckInActivity,
+                    scannerForCheckinUserActivity,
+                    scannerForCheckoutUserActivity)
             }
         }
     }
@@ -76,6 +80,8 @@ fun ScanUi(componentActivity: ComponentActivity,
            scannerForViewItemsInContainerActivity: ActivityResultLauncher<ScanOptions>,
            scannerForRemoveItemFromContainerActivity: ActivityResultLauncher<ScanOptions>,
            scannerForInitialBadgeCheckInActivity: ActivityResultLauncher<ScanOptions>,
+           scannerForCheckinUserActivity: ActivityResultLauncher<ScanOptions>,
+           scannerForCheckoutUserActivity: ActivityResultLauncher<ScanOptions>,
            modifier: Modifier = Modifier
                .fillMaxSize()
                .wrapContentSize(Alignment.Center)) {
@@ -127,10 +133,10 @@ fun ScanUi(componentActivity: ComponentActivity,
         Button(onClick = { scannerForInitialBadgeCheckInActivity.launch(ScanOptions()) }) {
             Text("Initial Badge Check-In")
         }
-        Button(onClick = { /*TODO*/ }) {
+        Button(onClick = { scannerForCheckinUserActivity.launch(ScanOptions()) }) {
             Text("Badge Check-In")
         }
-        Button(onClick = { /*TODO*/ }) {
+        Button(onClick = { scannerForCheckoutUserActivity.launch(ScanOptions()) }) {
             Text("Badge Check-Out")
         }
     }
@@ -144,7 +150,9 @@ fun ScannerApp(
     scannerForDisplayItem: ActivityResultLauncher<ScanOptions>,
     scannerForViewItemsInContainerActivity: ActivityResultLauncher<ScanOptions>,
     scannerForRemoveItemFromContainerActivity: ActivityResultLauncher<ScanOptions>,
-    scannerForInitialBadgeCheckInActivity: ActivityResultLauncher<ScanOptions>
+    scannerForInitialBadgeCheckInActivity: ActivityResultLauncher<ScanOptions>,
+    scannerForCheckinUserActivity: ActivityResultLauncher<ScanOptions>,
+    scannerForCheckoutUserActivity: ActivityResultLauncher<ScanOptions>
 ) {
     InventoryScannerTheme {
         ScanUi(componentActivity,
@@ -152,6 +160,8 @@ fun ScannerApp(
             scannerForDisplayItem,
             scannerForViewItemsInContainerActivity,
             scannerForRemoveItemFromContainerActivity,
-            scannerForInitialBadgeCheckInActivity)
+            scannerForInitialBadgeCheckInActivity,
+            scannerForCheckinUserActivity,
+            scannerForCheckoutUserActivity)
     }
 }

@@ -97,6 +97,12 @@ interface InventoryApi {
     @POST("/inventory/api/v1.0/user-picture/{user_id}")
     fun uploadUserPicture(@Path("user_id") userId: String,
                           @Part file: MultipartBody.Part): Call<ResponseBody>
+
+    @POST("/inventory/api/v1.0/user-checkin/{user_id}")
+    fun checkinUser(@Path("user_id") userId: String): Call<ResponseBody>
+
+    @POST("/inventory/api/v1.0/user-checkout/{user_id}")
+    fun checkoutUser(@Path("user_id") userId: String): Call<ResponseBody>
 }
 
 fun getInventoryApiInstance(url: String = INVENTORY_SERVER): InventoryApi {

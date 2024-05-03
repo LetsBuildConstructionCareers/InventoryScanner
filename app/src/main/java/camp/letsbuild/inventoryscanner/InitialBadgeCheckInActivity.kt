@@ -104,11 +104,22 @@ fun InitialBadgeCheckInUI(componentActivity: ComponentActivity,
         Button(onClick = {
             val inventoryApi = getInventoryApiInstance()
             val userId = componentActivity.intent.getStringExtra("barcode_id") ?: return@Button
+            val checkinCall = inventoryApi.checkinUser(userId)
             uploadUserPictureToInventory(inventoryApi, userId, imageFile).enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                    Log.i(TAG, response.message())
-                    Toast.makeText(componentActivity, response.message(), Toast.LENGTH_LONG).show();
-                    componentActivity.finish()
+                    checkinCall.enqueue(object : Callback<ResponseBody> {
+                        override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                            Log.i(TAG, response.message())
+                            Toast.makeText(componentActivity, response.message(), Toast.LENGTH_LONG).show();
+                            componentActivity.finish()
+                        }
+
+                        override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                            Log.i(TAG, t.message, t)
+                            Toast.makeText(componentActivity, t.message, Toast.LENGTH_LONG).show();
+                        }
+                    })
+
                 }
 
                 override fun onFailure(call: Call<ResponseBody>, t: Throwable) {

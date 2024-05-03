@@ -25,6 +25,21 @@ import retrofit2.Response
 
 private const val TAG = "AddItemsToContainerActivity"
 
+class AddItemsToContainerLandingActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val scannerLauncher = scannerForNewActivity(this, AddItemsToContainerActivity::class.java)
+        setContent {
+            Column (modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally) {
+                Button(onClick = { scannerLauncher.launch(ScanOptions()) }) {
+                    Text("Scan Container")
+                }
+            }
+        }
+    }
+}
+
 class AddItemsToContainerActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

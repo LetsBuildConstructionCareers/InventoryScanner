@@ -81,7 +81,10 @@ fun ScanUi(componentActivity: ComponentActivity,
         }) {
             Text("Scan New Item")
         }
-        Button(onClick = {scannerForAddItemsToContainerActivity.launch(ScanOptions())}) {
+        Button(onClick = {
+            val intent = Intent(componentActivity, AddItemsToContainerLandingActivity::class.java)
+            componentActivity.startActivity(intent)
+        }) {
             Text("Add Item to Container")
         }
         Button(onClick = { /*TODO*/ }) {

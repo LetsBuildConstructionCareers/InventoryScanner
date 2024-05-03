@@ -48,6 +48,16 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".AddItemsToContainerLandingActivity"
+            android:exported="true"
+            android:label="InventoryScanner"
+            android:theme="@style/Theme.InventoryScanner">
+            <intent-filter>
+                <action android:name="android.intent.action.RUN"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".AddItemsToContainerActivity"
             android:exported="true"
             android:label="InventoryScanner"

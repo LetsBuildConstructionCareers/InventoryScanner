@@ -88,7 +88,19 @@ fun ScanUi(componentActivity: ComponentActivity,
             Text("Remove Item from Container")
         }
         Button(onClick = { /*TODO*/ }) {
+            Text("View Items in Container")
+        }
+        Button(onClick = { /*TODO*/ }) {
             Text("Add Item or Container to Vehicle")
+        }
+        Button(onClick = { /*TODO*/ }) {
+            Text("Remove Item or Container from Vehicle")
+        }
+        Button(onClick = { /*TODO*/ }) {
+            Text("Add Item or Container to Location")
+        }
+        Button(onClick = { /*TODO*/ }) {
+            Text("Remove Item or Container from Location")
         }
         Button(onClick = {
             val intent = Intent(componentActivity, ToolshedCheckoutActivity::class.java)

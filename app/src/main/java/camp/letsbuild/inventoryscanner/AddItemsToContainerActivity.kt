@@ -81,7 +81,7 @@ fun AddItemsToContainerUI(containerId: String, containerShortId: String,
             Text("Scan Item into Container")
         }
         Button(onClick = { componentActivity.finish() }) {
-            Text("Finish Adding Items")
+            Text("Finish (No More Items to Add)")
         }
     }
 }

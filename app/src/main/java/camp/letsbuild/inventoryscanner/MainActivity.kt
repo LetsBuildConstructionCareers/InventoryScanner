@@ -124,7 +124,10 @@ fun ScanUi(componentActivity: ComponentActivity,
         }) {
             Text("Tool Shed - Check-Out")
         }
-        Button(onClick = { /*TODO*/ }) {
+        Button(onClick = {
+            val intent = Intent(componentActivity, ToolshedCheckinActivity::class.java)
+            componentActivity.startActivity(intent)
+        }) {
             Text("Tool Shed - Check-In")
         }
         Button(onClick = { scannerForDisplayItem.launch(ScanOptions()) }) {

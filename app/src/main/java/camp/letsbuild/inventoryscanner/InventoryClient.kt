@@ -2,6 +2,7 @@ package camp.letsbuild.inventoryscanner
 
 import android.net.Uri
 import android.util.Log
+import kotlinx.serialization.Serializable
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -28,10 +29,11 @@ private const val TAG = "InventoryClient"
 
 const val INVENTORY_SERVER = "http://10.23.1.254:5000"
 
+@Serializable
 data class Item(
     val barcode_id: String,
     val name: String,
-)
+) : java.io.Serializable
 
 data class User(
     val barcode_id: String,

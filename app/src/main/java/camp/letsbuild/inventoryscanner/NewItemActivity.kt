@@ -43,8 +43,8 @@ class NewItemActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val barcodeId = intent.getStringExtra("barcode_id")
-        val inventoryApi = getInventoryApiInstance()
-        val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        getInventoryApiInstance()
+        Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
         val imagePath = getExternalFilesDir(DIRECTORY_PICTURES) //File(filesDir, "images")
         val file = File.createTempFile(
@@ -89,18 +89,16 @@ fun NewItemUI(componentActivity: ComponentActivity,
         val imageView = ImageView(componentActivity)
         imageView.setImageBitmap(BitmapFactory.decodeFile(imageFile.path))
         var nameInput by remember { mutableStateOf("") }
-        TextField(value = nameInput, onValueChange = {nameInput = it})
+        TextField(value = nameInput, onValueChange = {nameInput = it}, label = { Text("Item Name") }, placeholder = { Text("Enter Name for Item") })
         Button(onClick = {
             val inventoryApi = getInventoryApiInstance()
             val barcodeId = componentActivity.intent.getStringExtra("barcode_id")
             if (barcodeId != null) {
                 uploadItemToInventory(inventoryApi, barcodeId, nameInput, imageFile).enqueue(object : Callback<ResponseBody> {
-                    override fun onResponse(
-                        call: Call<ResponseBody>,
-                        response: Response<ResponseBody>
-                    ) {
+                    override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                         Log.i(TAG, response.message())
                         Toast.makeText(componentActivity, response.message(), Toast.LENGTH_LONG).show();
+                        componentActivity.finish()
                     }
 
                     override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
@@ -111,7 +109,7 @@ fun NewItemUI(componentActivity: ComponentActivity,
                 })
             }
         }) {
-
+            Text("Finish")
         }
     }
 }

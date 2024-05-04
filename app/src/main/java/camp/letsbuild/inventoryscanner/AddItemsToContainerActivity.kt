@@ -3,6 +3,7 @@ package camp.letsbuild.inventoryscanner
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
@@ -17,6 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanIntentResult
 import com.journeyapps.barcodescanner.ScanOptions
 import okhttp3.ResponseBody
 import retrofit2.Call
@@ -46,7 +49,36 @@ class AddItemsToContainerActivity : ComponentActivity() {
         val containerId = intent.getStringExtra("barcode_id") ?: return
         val intent = Intent(this, AddSingleItemToContainerActivity::class.java)
         intent.putExtra("containerId", containerId)
-        val scannerForAddSingleItem = scannerForNewActivity(this, intent, "itemId")
+        val scannerForAddSingleItem = registerForActivityResult(ScanContract()) { scannedBarcode: ScanIntentResult ->
+            run {
+                if (scannedBarcode.contents == null) {
+                    Toast.makeText(this@AddItemsToContainerActivity, "Cancelled", Toast.LENGTH_LONG).show()
+                } else {
+                    val itemId = scannedBarcode.contents
+                    getInventoryApiInstance().getParentOfItem(itemId).enqueue(object : Callback<String> {
+                        override fun onResponse(call: Call<String>, response: Response<String>) {
+                            Log.d(TAG, "Getting parent of item")
+                            if (response.isSuccessful && response.body() != null) {
+                                val itemParent = response.body()!!
+                                Log.d(TAG, itemParent)
+                                if (itemParent.isNotBlank()) {
+                                    Toast.makeText(this@AddItemsToContainerActivity, "Item is already in a container!!", Toast.LENGTH_LONG).show()
+                                } else {
+                                    intent.putExtra("itemId", itemId)
+                                    startActivity(intent)
+                                }
+                            } else {
+                                TODO("Not yet implemented")
+                            }
+                        }
+
+                        override fun onFailure(call: Call<String>, t: Throwable) {
+                            TODO("Not yet implemented")
+                        }
+                    })
+                }
+            }
+        }
         setContent {
             AddItemsToContainerUI(
                 containerId,

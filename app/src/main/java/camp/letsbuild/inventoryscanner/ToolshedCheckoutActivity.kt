@@ -2,6 +2,7 @@ package camp.letsbuild.inventoryscanner
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanIntentResult
 import com.journeyapps.barcodescanner.ScanOptions
 import okhttp3.ResponseBody
 import retrofit2.Call
@@ -23,7 +26,30 @@ import retrofit2.Response
 class ToolshedCheckoutActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val scannerForBadge = scannerForNewActivity(this, ToolshedCheckoutItemForUserActivity::class.java)
+        val scannerForBadge = registerForActivityResult(ScanContract()) { scannedBarcode: ScanIntentResult ->
+            run {
+                if (scannedBarcode.contents == null) {
+                    Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show()
+                } else {
+                    val userId = scannedBarcode.contents
+                    getInventoryApiInstance().getUser(userId).enqueue(object : Callback<User> {
+                        override fun onResponse(call: Call<User>, response: Response<User>) {
+                            if (response.isSuccessful && response.body() != null && !(response.body()!!.name.isNullOrBlank())) {
+                                val intent = Intent(this@ToolshedCheckoutActivity, ToolshedCheckoutItemForUserActivity::class.java)
+                                intent.putExtra("barcode_id", userId)
+                                startActivity(intent)
+                            } else {
+                                Toast.makeText(this@ToolshedCheckoutActivity, "Could not find valid user!!", Toast.LENGTH_LONG).show()
+                            }
+                        }
+
+                        override fun onFailure(call: Call<User>, t: Throwable) {
+                            TODO("Not yet implemented")
+                        }
+                    })
+                }
+            }
+        }//scannerForNewActivity(this, ToolshedCheckoutItemForUserActivity::class.java)
         setContent {
             Column(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.Center),
                    horizontalAlignment = Alignment.CenterHorizontally) {

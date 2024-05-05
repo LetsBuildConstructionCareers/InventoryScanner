@@ -31,7 +31,7 @@ class CheckoutUserActivity : ComponentActivity() {
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(getItemPictureUrl(userId))
+                        .data(getUserPictureUrl(userId))
                         .crossfade(true)
                         .build(),
                     contentDescription = ""

@@ -5,9 +5,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -22,8 +25,11 @@ class ToolshedCheckoutActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val scannerForBadge = scannerForNewActivity(this, ToolshedCheckoutItemForUserActivity::class.java)
         setContent {
-            Button(onClick = { scannerForBadge.launch(ScanOptions())}) {
-                Text("Scan Badge")
+            Column(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.Center),
+                   horizontalAlignment = Alignment.CenterHorizontally) {
+                Button(onClick = { scannerForBadge.launch(ScanOptions()) }) {
+                    Text("Scan Badge")
+                }
             }
         }
     }
@@ -40,7 +46,8 @@ class ToolshedCheckoutItemForUserActivity : ComponentActivity() {
             return
         }
         setContent {
-            Column {
+            Column(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.Center),
+                   horizontalAlignment = Alignment.CenterHorizontally) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(getUserPictureUrl(userId))
@@ -69,23 +76,29 @@ class ToolshedCheckoutItemFinalizeActivity : ComponentActivity() {
         }
         val inventoryApi = getInventoryApiInstance()
         setContent {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(getItemPictureUrl(itemId))
-                    .crossfade(true)
-                    .build(),
-                contentDescription = ""
-            )
-            Button(onClick = { inventoryApi.checkoutFromToolshed(ToolshedCheckout(itemId, userId)).enqueue(object : Callback<ResponseBody> {
-                override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                    this@ToolshedCheckoutItemFinalizeActivity.finish()
-                }
+            Column(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.Center),
+                horizontalAlignment = Alignment.CenterHorizontally) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(getItemPictureUrl(itemId))
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = ""
+                )
+                Button(onClick = {
+                    inventoryApi.checkoutFromToolshed(ToolshedCheckout(itemId, userId))
+                        .enqueue(object : Callback<ResponseBody> {
+                            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                                this@ToolshedCheckoutItemFinalizeActivity.finish()
+                            }
 
-                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                    TODO("Not yet implemented")
+                            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                                TODO("Not yet implemented")
+                            }
+                        })
+                }) {
+                    Text("Checkout Item")
                 }
-            }) }) {
-                Text("Checkout Item")
             }
         }
     }

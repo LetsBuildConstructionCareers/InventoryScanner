@@ -154,6 +154,7 @@ fun AddSingleItemToContainerUI(itemId: String, containerId: String,
             val inventoryApi = getInventoryApiInstance()
             inventoryApi.addItemsToContainer(containerId, listOf(itemId)).enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                    Toast.makeText(componentActivity, response.message(), Toast.LENGTH_LONG).show()
                     componentActivity.finish()
                 }
 

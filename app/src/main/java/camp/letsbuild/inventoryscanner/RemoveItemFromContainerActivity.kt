@@ -65,6 +65,10 @@ class RemoveItemFromContainerActivity : ComponentActivity() {
                 }) }) {
                     Text("Confirm Remove Item")
                 }
+                // Adding a Cancel button as per plan
+                Button(onClick = { finish() }) {
+                    Text("Cancel")
+                }
             }
         }
     }

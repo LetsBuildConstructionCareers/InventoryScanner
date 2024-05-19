@@ -16,10 +16,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,16 +48,42 @@ class ToolshedCheckinActivity : ComponentActivity() {
                 if (scannedBarcode.contents == null) {
                     Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show();
                 } else {
-                    val intent = Intent(this, ToolshedCheckinItemActivity::class.java)
+                    val intent = Intent(this, ToolshedCheckinConfirmUserActivity::class.java)
                     val itemId = scannedBarcode.contents
-                    intent.putExtra("barcode_id", itemId)
-                    getInventoryApiInstance().getItemsInContainer(itemId).enqueue(object : Callback<List<Item>> {
+                    val inventoryApi = getInventoryApiInstance()
+                    inventoryApi.getItemsInContainer(itemId).enqueue(object : Callback<List<Item>> {
                         override fun onResponse(call: Call<List<Item>>, response: Response<List<Item>>) {
                             if (response.isSuccessful && response.body() != null) {
                                 val itemContents = response.body()!!
                                 Log.d(TAG, itemContents.toString())
                                 intent.putExtra("itemContents", itemContents.toTypedArray())
-                                startActivity(intent)
+                                inventoryApi.getItem(itemId).enqueue(object : Callback<Item> {
+                                    override fun onResponse(call: Call<Item>, response: Response<Item>) {
+                                        if (response.isSuccessful && response.body() != null) {
+                                            val item = response.body()!!
+                                            intent.putExtra("item", item)
+                                            inventoryApi.getLastOutstandingCheckout(itemId).enqueue(object : Callback<ToolshedCheckout> {
+                                                override fun onResponse(call: Call<ToolshedCheckout>, response: Response<ToolshedCheckout>) {
+                                                    if (response.isSuccessful) {
+                                                        val toolshedCheckout = response.body()
+                                                        intent.putExtra("toolshedCheckout", toolshedCheckout)
+                                                        startActivity(intent)
+                                                    }
+                                                }
+
+                                                override fun onFailure(call: Call<ToolshedCheckout>, t: Throwable) {
+                                                    TODO("Not yet implemented")
+                                                }
+                                            })
+                                        } else {
+                                            TODO("Not yet implemented")
+                                        }
+                                    }
+
+                                    override fun onFailure(call: Call<Item>, t: Throwable) {
+                                        TODO("Not yet implemented")
+                                    }
+                                })
                             }
                         }
 
@@ -74,6 +103,103 @@ class ToolshedCheckinActivity : ComponentActivity() {
             ) {
                 Button(onClick = { scannerLauncher.launch(ScanOptions()) }) {
                     Text("Scan Item")
+                }
+            }
+        }
+    }
+}
+
+class ToolshedCheckinConfirmUserActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val toolshedCheckout = intent.getSerializableExtra("toolshedCheckout") as ToolshedCheckout?
+        val checkoutId = toolshedCheckout?.checkout_id ?: ""
+        val userId = toolshedCheckout?.user_id
+        val item = intent.getSerializableExtra("item") as Item
+        val itemContents: Array<Item> = intent.getSerializableExtra("itemContents") as Array<Item>
+        val checkinItemIntent = Intent(this, ToolshedCheckinItemActivity::class.java)
+        checkinItemIntent.putExtra("item", item)
+        checkinItemIntent.putExtra("itemContents", itemContents)
+        checkinItemIntent.putExtra("toolshedCheckoutId", checkoutId)
+        checkinItemIntent.putExtra("userId", userId)
+        val overrideUserIntent = Intent(this, ToolshedCheckinOverrideUserActivity::class.java)
+        overrideUserIntent.putExtra("item", item)
+        overrideUserIntent.putExtra("itemContents", itemContents)
+        overrideUserIntent.putExtra("toolshedCheckoutId", checkoutId)
+        if (userId == null) {
+            overrideUserIntent.putExtra("reasonOverrideIsRequired", "No toolshed checkout is present.")
+            startActivity(overrideUserIntent)
+        } else {
+            setContent {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .wrapContentSize(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(getUserPictureUrl(userId))
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = ""
+                    )
+                    Button(onClick = {
+                        startActivity(checkinItemIntent)
+                        finish()
+                    }) {
+                        Text("User's Picture Matches")
+                    }
+                    Button(onClick = {
+                        overrideUserIntent.putExtra("reasonOverrideIsRequired", "Checkin user does not match checkout user.")
+                        startActivity(overrideUserIntent)
+                        finish()
+                    }) {
+                        Text("User's Picture Does NOT Match")
+                    }
+                }
+            }
+        }
+    }
+}
+
+class ToolshedCheckinOverrideUserActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val item = intent.getSerializableExtra("item") as Item
+        val itemContents: Array<Item> = intent.getSerializableExtra("itemContents") as Array<Item>
+        val toolshedCheckoutId = intent.getStringExtra("toolshedCheckoutId")
+        val reasonOverrideIsRequired = intent.getStringExtra("reasonOverrideIsRequired") ?: "Unknown error!!"
+        val checkinItemIntent = Intent(this, ToolshedCheckinItemActivity::class.java)
+        checkinItemIntent.putExtra("item", item)
+        checkinItemIntent.putExtra("itemContents", itemContents)
+        checkinItemIntent.putExtra("toolshedCheckoutId", toolshedCheckoutId)
+        val scannerLauncher = registerForActivityResult(ScanContract()) { scannedBarcode: ScanIntentResult ->
+            run {
+                if (scannedBarcode.contents == null) {
+                    Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show();
+                } else {
+                    checkinItemIntent.putExtra("userId", scannedBarcode.contents)
+                    startActivity(checkinItemIntent)
+                }
+            }
+        }
+        setContent {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .wrapContentSize(Alignment.Center),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                var overrideJustification by remember { mutableStateOf("") }
+                Text(reasonOverrideIsRequired)
+                TextField(value = overrideJustification, onValueChange = {overrideJustification = it}, label = { Text("Justification for Override") }, placeholder = { Text("Provide justification for why user did not checkout item.") })
+                Button(onClick = {
+                    checkinItemIntent.putExtra("overrideJustification", overrideJustification)
+                    scannerLauncher.launch(ScanOptions())
+                    finish()
+                }) {
+                    Text("Scan User Badge and Continue")
                 }
             }
         }
@@ -100,31 +226,17 @@ class ToolshedCheckinItemActivity : ComponentActivity() {
                 if (savableScannedMap != null) scannedMap.putAll(savableScannedMap)
             }
         }
-        val barcodeId = intent.getStringExtra("barcode_id") ?: return
-        val inventoryApi = getInventoryApiInstance()
+        val item = intent.getSerializableExtra("item") as Item
+        val barcodeId = item.barcode_id
         val itemContents: Array<Item> = intent.getSerializableExtra("itemContents") as Array<Item>
-        val call = inventoryApi.getItemsInContainer(barcodeId)
-        /*
-        call.enqueue(object : Callback<List<Item>> {
-            override fun onResponse(call: Call<List<Item>>, response: Response<List<Item>>) {
-                if (response.isSuccessful && response.body() != null) {
-                    itemContents = response.body()!!
-                    Log.d(TAG, itemContents.toString())
-                }
-            }
-
-            override fun onFailure(call: Call<List<Item>>, t: Throwable) {
-                TODO("Not yet implemented")
-            }
-        })
-        if (!call.isExecuted) return
-        Log.d(TAG, itemContents.toString())
-         */
+        val toolshedCheckoutId = intent.getStringExtra("toolshedCheckoutId")
+        val overrideJustification = intent.getStringExtra("overrideJustification")
+        val userId = intent.getStringExtra("userId") ?: return
 
         if (itemContents.isEmpty()) {
             Log.d(TAG, "Checkin single item")
             setContent {
-                ToolshedAddSingleItemCheckinUI(barcodeId, this)
+                ToolshedAddSingleItemCheckinUI(toolshedCheckoutId, barcodeId, userId, overrideJustification, this)
             }
         } else {
             Log.d(TAG, "Checkin multiple items")
@@ -146,8 +258,11 @@ class ToolshedCheckinItemActivity : ComponentActivity() {
             }
             setContent {
                 ToolshedAddMultipleItemsCheckinUI(
+                    toolshedCheckoutId,
                     barcodeId,
                     itemContents.asList(),
+                    userId,
+                    overrideJustification,
                     scannedMap,
                     scannerLauncher,
                     this
@@ -157,8 +272,8 @@ class ToolshedCheckinItemActivity : ComponentActivity() {
     }
 }
 
-fun finishCheckinToToolshed(itemId: String, componentActivity: ComponentActivity) {
-    getInventoryApiInstance().checkinToToolshed(ToolshedCheckin(itemId, "", ""))
+fun finishCheckinToToolshed(checkoutId: String?, itemId: String, userId: String, overrideJustification: String?, componentActivity: ComponentActivity) {
+    getInventoryApiInstance().checkinToToolshed(ToolshedCheckin(null, checkoutId, itemId, userId, System.currentTimeMillis() / 1000, overrideJustification, null))
         .enqueue(object : Callback<ResponseBody> {
             override fun onResponse(
                 call: Call<ResponseBody>,
@@ -174,7 +289,7 @@ fun finishCheckinToToolshed(itemId: String, componentActivity: ComponentActivity
 }
 
 @Composable
-fun ToolshedAddSingleItemCheckinUI(itemId: String, componentActivity: ComponentActivity, modifier: Modifier = Modifier
+fun ToolshedAddSingleItemCheckinUI(checkoutId: String?, itemId: String, userId: String, overrideJustification: String?, componentActivity: ComponentActivity, modifier: Modifier = Modifier
     .fillMaxSize()
     .wrapContentSize(Alignment.Center)) {
     Column(
@@ -188,7 +303,7 @@ fun ToolshedAddSingleItemCheckinUI(itemId: String, componentActivity: ComponentA
                 .build(),
             contentDescription = itemId
         )
-        Button(onClick = { finishCheckinToToolshed(itemId, componentActivity) }) {
+        Button(onClick = { finishCheckinToToolshed(checkoutId, itemId, userId, overrideJustification, componentActivity) }) {
             Text("Confirm Check-In")
         }
     }
@@ -196,7 +311,7 @@ fun ToolshedAddSingleItemCheckinUI(itemId: String, componentActivity: ComponentA
 
 @Composable
 fun ToolshedAddMultipleItemsCheckinUI(
-    containerId: String, childItems: List<Item>, scannedMap: SnapshotStateMap<String, Boolean>, scannerLauncher: ActivityResultLauncher<ScanOptions>, componentActivity: ComponentActivity, modifier: Modifier = Modifier
+    checkoutId: String?, containerId: String, childItems: List<Item>, userId: String, overrideJustification: String?, scannedMap: SnapshotStateMap<String, Boolean>, scannerLauncher: ActivityResultLauncher<ScanOptions>, componentActivity: ComponentActivity, modifier: Modifier = Modifier
         .fillMaxSize()
         .wrapContentSize(Alignment.Center)) {
     Column (verticalArrangement = Arrangement.SpaceBetween, modifier = Modifier.verticalScroll(
@@ -224,7 +339,7 @@ fun ToolshedAddMultipleItemsCheckinUI(
         Button(onClick = { scannerLauncher.launch(ScanOptions()) }, enabled = !scannedMap.values.reduce { left, right -> left && right }) {
             Text("Scan item in container")
         }
-        Button(onClick = { finishCheckinToToolshed(containerId, componentActivity) }, enabled = scannedMap.values.reduce { left, right -> left && right }) {
+        Button(onClick = { finishCheckinToToolshed(checkoutId, containerId, userId, overrideJustification, componentActivity) }, enabled = scannedMap.values.reduce { left, right -> left && right }) {
             Text("Confirm Check-In")
         }
     }

@@ -67,7 +67,30 @@ class ToolshedCheckoutItemForUserActivity : ComponentActivity() {
         val userId = intent.getStringExtra("barcode_id")
         val intent = Intent(this, ToolshedCheckoutItemFinalizeActivity::class.java)
         intent.putExtra("userId", userId)
-        val scannerForToolshedCheckoutFinalize = scannerForNewActivity(this, intent, "itemId")
+        val scannerForToolshedCheckoutFinalize = registerForActivityResult(ScanContract()) { scannedBarcode: ScanIntentResult ->
+            run {
+                if (scannedBarcode.contents == null) {
+                    Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show()
+                } else {
+                    intent.putExtra("itemId", scannedBarcode.contents)
+                    getInventoryApiInstance().getLastOutstandingCheckout(scannedBarcode.contents).enqueue(object : Callback<ToolshedCheckout> {
+                        override fun onResponse(call: Call<ToolshedCheckout>, response: Response<ToolshedCheckout>) {
+                            if (response.isSuccessful) {
+                                if (response.body() != null && response.body()!!.item_id.isNotBlank()) {
+                                    Toast.makeText(this@ToolshedCheckoutItemForUserActivity, "Item has already been checked out!!", Toast.LENGTH_LONG).show()
+                                } else {
+                                    startActivity(intent)
+                                }
+                            }
+                        }
+
+                        override fun onFailure(call: Call<ToolshedCheckout>, t: Throwable) {
+                            TODO("Not yet implemented")
+                        }
+                    })
+                }
+            }
+        }//scannerForNewActivity(this, intent, "itemId")
         if (userId.isNullOrBlank()) {
             return
         }
@@ -112,7 +135,7 @@ class ToolshedCheckoutItemFinalizeActivity : ComponentActivity() {
                     contentDescription = ""
                 )
                 Button(onClick = {
-                    inventoryApi.checkoutFromToolshed(ToolshedCheckout(itemId, userId))
+                    inventoryApi.checkoutFromToolshed(ToolshedCheckout("", itemId, userId, System.currentTimeMillis() / 1000))
                         .enqueue(object : Callback<ResponseBody> {
                             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                                 this@ToolshedCheckoutItemFinalizeActivity.finish()

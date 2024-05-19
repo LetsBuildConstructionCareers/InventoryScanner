@@ -43,15 +43,22 @@ data class User(
     val description: String,
 )
 
+@Serializable
 data class ToolshedCheckout(
+    val checkout_id: String,
     val item_id: String,
     val user_id: String,
-)
+    val unix_time: Long,
+) : java.io.Serializable
 
 data class ToolshedCheckin(
-    val itemId: String,
-    val userId: String,
-    val description: String
+    val checkin_id: String?,
+    val checkout_id: String?,
+    val item_id: String,
+    val user_id: String,
+    val unix_time: Long,
+    val override_justification: String?,
+    val description: String?
 )
 
 interface InventoryApi {
@@ -84,6 +91,9 @@ interface InventoryApi {
 
     @POST("/inventory/api/v1.0/toolshed-checkout")
     fun checkoutFromToolshed(@Body toolshedCheckout: ToolshedCheckout): Call<ResponseBody>
+
+    @GET("/inventory/api/v1.0/toolshed-checkout/{item_id}/last-outstanding")
+    fun getLastOutstandingCheckout(@Path("item_id") itemId: String): Call<ToolshedCheckout>
 
     @POST("/inventory/api/v1.0/toolshed-checkin")
     fun checkinToToolshed(@Body toolshedCheckin: ToolshedCheckin): Call<ResponseBody>

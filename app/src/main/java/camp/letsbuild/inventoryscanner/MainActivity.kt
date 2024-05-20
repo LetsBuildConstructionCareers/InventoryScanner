@@ -130,6 +130,12 @@ fun ScanUi(componentActivity: ComponentActivity,
         }) {
             Text("Tool Shed - Check-In")
         }
+        Button(onClick = {
+            val intent = Intent(componentActivity, DisplayItemsCheckedOutByUserActivity::class.java)
+            componentActivity.startActivity(intent)
+        }) {
+            Text("Display Items Checked-Out by User")
+        }
         Button(onClick = { scannerForDisplayItem.launch(ScanOptions()) }) {
             Text(text = "Scan Existing Item")
         }

@@ -27,6 +27,24 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+fun launchDisplayItemsCheckedOutByUserActivity(userId: String, componentActivity: ComponentActivity) {
+    getInventoryApiInstance().getItemsCheckedOutByUser(userId).enqueue(object : Callback<List<Item>> {
+        override fun onResponse(call: Call<List<Item>>, response: Response<List<Item>>) {
+            if (response.isSuccessful) {
+                val intent = Intent(componentActivity, DisplayItemsCheckedOutByUserViewerActivity::class.java)
+                intent.putExtra("checkedOutItems", response.body()?.toTypedArray())
+                componentActivity.startActivity(intent)
+            } else {
+                TODO("Not yet implemented")
+            }
+        }
+
+        override fun onFailure(call: Call<List<Item>>, t: Throwable) {
+            TODO("Not yet implemented")
+        }
+    })
+}
+
 class DisplayItemsCheckedOutByUserActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,21 +54,7 @@ class DisplayItemsCheckedOutByUserActivity : ComponentActivity() {
                     Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show()
                 } else {
                     val userId = scannedBarcode.contents
-                    getInventoryApiInstance().getItemsCheckedOutByUser(userId).enqueue(object : Callback<List<Item>> {
-                        override fun onResponse(call: Call<List<Item>>, response: Response<List<Item>>) {
-                            if (response.isSuccessful) {
-                                val intent = Intent(this@DisplayItemsCheckedOutByUserActivity, DisplayItemsCheckedOutByUserViewerActivity::class.java)
-                                intent.putExtra("checkedOutItems", response.body()?.toTypedArray())
-                                startActivity(intent)
-                            } else {
-                                TODO("Not yet implemented")
-                            }
-                        }
-
-                        override fun onFailure(call: Call<List<Item>>, t: Throwable) {
-                            TODO("Not yet implemented")
-                        }
-                    })
+                    launchDisplayItemsCheckedOutByUserActivity(userId, this@DisplayItemsCheckedOutByUserActivity)
                 }
             }
         }

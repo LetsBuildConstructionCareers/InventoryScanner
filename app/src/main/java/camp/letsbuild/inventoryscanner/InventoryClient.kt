@@ -32,13 +32,14 @@ data class Item(
     val name: String,
 ) : java.io.Serializable
 
+@Serializable
 data class User(
     val barcode_id: String,
     val name: String,
     val company: String,
     val picture_path: String,
     val description: String,
-)
+) : java.io.Serializable
 
 @Serializable
 data class ToolshedCheckout(
@@ -97,6 +98,9 @@ interface InventoryApi {
 
     @GET("/inventory/api/v1.0/users/{user_id}/toolshed-checkout-outstanding")
     fun getItemsCheckedOutByUser(@Path("user_id") userId: String): Call<List<Item>>
+
+    @GET("/inventory/api/v1.0/users-toolshed-checkout-outstanding")
+    fun getUsersWithOutstandingToolshedCheckouts(): Call<List<User>>
 
     @GET("/inventory/api/v1.0/users/{user_id}")
     @Headers("Cache-Control: no-cache")

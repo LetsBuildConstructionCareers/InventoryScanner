@@ -130,6 +130,9 @@ fun ScanUi(componentActivity: ComponentActivity,
         }) {
             Text("Tool Shed - Check-In")
         }
+        Button(onClick = { launchDisplayUsersWithOutstandingToolshedCheckoutsActivity(componentActivity) }) {
+            Text("Display Users with Outstanding Toolshed Checkouts")
+        }
         Button(onClick = {
             val intent = Intent(componentActivity, DisplayItemsCheckedOutByUserActivity::class.java)
             componentActivity.startActivity(intent)

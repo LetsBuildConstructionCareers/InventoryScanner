@@ -55,7 +55,7 @@ class AddItemsToContainerActivity : ComponentActivity() {
                     Toast.makeText(this@AddItemsToContainerActivity, "Cancelled", Toast.LENGTH_LONG).show()
                 } else {
                     val itemId = scannedBarcode.contents
-                    getInventoryApiInstance().getParentOfItem(itemId).enqueue(object : Callback<String> {
+                    getInventoryApiInstance(this).getParentOfItem(itemId).enqueue(object : Callback<String> {
                         override fun onResponse(call: Call<String>, response: Response<String>) {
                             Log.d(TAG, "Getting parent of item")
                             if (response.isSuccessful && response.body() != null) {
@@ -105,6 +105,7 @@ fun AddItemsToContainerUI(containerId: String, containerShortId: String,
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(getItemPictureUrl(containerId))
+                .addHeader(AUTHORIZATION, getAuthorization(componentActivity))
                 .crossfade(true)
                 .build(),
             contentDescription = containerShortId
@@ -146,12 +147,13 @@ fun AddSingleItemToContainerUI(itemId: String, containerId: String,
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(getItemPictureUrl(itemId))
+                .addHeader(AUTHORIZATION, getAuthorization(componentActivity))
                 .crossfade(true)
                 .build(),
             contentDescription = "Picture of Item"
         )
         Button(onClick = {
-            val inventoryApi = getInventoryApiInstance()
+            val inventoryApi = getInventoryApiInstance(componentActivity)
             inventoryApi.addItemsToContainer(containerId, listOf(itemId)).enqueue(object : Callback<ResponseBody> {
                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                     Toast.makeText(componentActivity, response.message(), Toast.LENGTH_LONG).show()

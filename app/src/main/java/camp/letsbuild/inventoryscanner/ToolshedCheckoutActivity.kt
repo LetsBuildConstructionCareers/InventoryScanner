@@ -32,7 +32,7 @@ class ToolshedCheckoutActivity : ComponentActivity() {
                     Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show()
                 } else {
                     val userId = scannedBarcode.contents
-                    getInventoryApiInstance().getUser(userId).enqueue(object : Callback<User> {
+                    getInventoryApiInstance(this@ToolshedCheckoutActivity).getUser(userId).enqueue(object : Callback<User> {
                         override fun onResponse(call: Call<User>, response: Response<User>) {
                             if (response.isSuccessful && response.body() != null && !(response.body()!!.name.isNullOrBlank())) {
                                 val intent = Intent(this@ToolshedCheckoutActivity, ToolshedCheckoutItemForUserActivity::class.java)
@@ -73,7 +73,7 @@ class ToolshedCheckoutItemForUserActivity : ComponentActivity() {
                     Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show()
                 } else {
                     intent.putExtra("itemId", scannedBarcode.contents)
-                    getInventoryApiInstance().getLastOutstandingCheckout(scannedBarcode.contents).enqueue(object : Callback<ToolshedCheckout> {
+                    getInventoryApiInstance(this@ToolshedCheckoutItemForUserActivity).getLastOutstandingCheckout(scannedBarcode.contents).enqueue(object : Callback<ToolshedCheckout> {
                         override fun onResponse(call: Call<ToolshedCheckout>, response: Response<ToolshedCheckout>) {
                             if (response.isSuccessful) {
                                 if (response.body() != null && response.body()!!.item_id.isNotBlank()) {
@@ -100,6 +100,7 @@ class ToolshedCheckoutItemForUserActivity : ComponentActivity() {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(getUserPictureUrl(userId))
+                        .addHeader(AUTHORIZATION, getAuthorization(this@ToolshedCheckoutItemForUserActivity))
                         .crossfade(true)
                         .build(),
                     contentDescription = ""
@@ -123,7 +124,7 @@ class ToolshedCheckoutItemFinalizeActivity : ComponentActivity() {
         if (userId.isNullOrBlank() || itemId.isNullOrBlank()) {
             return
         }
-        val inventoryApi = getInventoryApiInstance()
+        val inventoryApi = getInventoryApiInstance(this)
         setContent {
             Column(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally) {

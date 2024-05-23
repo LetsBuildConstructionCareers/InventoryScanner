@@ -1,13 +1,18 @@
 package camp.letsbuild.inventoryscanner
 
+import android.content.Context
+import android.content.res.Resources
 import android.net.Uri
 import android.util.Log
 import kotlinx.serialization.Serializable
+import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Retrofit
@@ -24,7 +29,20 @@ import java.io.File
 
 private const val TAG = "InventoryClient"
 
-const val INVENTORY_SERVER = "http://10.23.1.254:5000"
+const val INVENTORY_SERVER = "https://inventory-server-service-wnjkb3ho2q-ul.a.run.app"
+//const val INVENTORY_SERVER = "https://10.23.1.200:5000"
+const val AUTHORIZATION = "Authorization"
+
+fun getAuthorization(context: Context): String {
+    return context.getString(R.string.authorization)
+}
+
+class ServiceInterceptor(private val context: Context) : Interceptor {
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val request = chain.request().newBuilder().addHeader(AUTHORIZATION, getAuthorization(context)).build()
+        return chain.proceed(request)
+    }
+}
 
 @Serializable
 data class Item(
@@ -121,16 +139,22 @@ interface InventoryApi {
     fun checkoutUser(@Path("user_id") userId: String): Call<ResponseBody>
 }
 
-fun getInventoryApiInstance(url: String = INVENTORY_SERVER): InventoryApi {
-    return Retrofit.Builder().baseUrl(url).addConverterFactory(GsonConverterFactory.create()).build().create(InventoryApi::class.java)
+fun getInventoryApiInstance(context: Context, url: String = INVENTORY_SERVER): InventoryApi {
+    return Retrofit.Builder()
+        .baseUrl(url)
+        .client(OkHttpClient.Builder().addInterceptor(ServiceInterceptor(context)).build())
+        .addConverterFactory(GsonConverterFactory.create())
+        .build().create(InventoryApi::class.java)
 }
 
 fun getItemPictureUrl(barcodeId: String): String {
-    return Uri.parse(INVENTORY_SERVER).buildUpon().appendPath("/inventory/api/v1.0/item-picture/").appendPath(barcodeId).toString()
+    return "$INVENTORY_SERVER/inventory/api/v1.0/item-picture/$barcodeId"
+    //return Uri.parse(INVENTORY_SERVER).buildUpon().appendPath("/inventory/api/v1.0/item-picture/").appendPath(barcodeId).toString()
 }
 
 fun getUserPictureUrl(barcodeId: String): String {
-    return Uri.parse(INVENTORY_SERVER).buildUpon().appendPath("/inventory/api/v1.0/user-picture/").appendPath(barcodeId).toString()
+    return "$INVENTORY_SERVER/inventory/api/v1.0/user-picture/$barcodeId"
+    //return Uri.parse(INVENTORY_SERVER).buildUpon().appendPath("/inventory/api/v1.0/user-picture/").appendPath(barcodeId).toString()
 }
 
 fun uploadItemToInventory(inventoryApi: InventoryApi, barcodeId: String, name: String, picture: File): Call<ResponseBody> {

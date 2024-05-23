@@ -40,7 +40,7 @@ class InitialBadgeCheckInActivity : ComponentActivity() {
         val barcodeId = intent.getStringExtra("barcode_id") ?: return
 
         var userInstructions = ""
-        getInventoryApiInstance().getUser(barcodeId).enqueue(object : Callback<User> {
+        getInventoryApiInstance(this).getUser(barcodeId).enqueue(object : Callback<User> {
             override fun onResponse(call: Call<User>, response: Response<User>) {
                 Log.d(TAG, response.toString())
                 Log.d(TAG, response.body().toString())
@@ -102,7 +102,7 @@ fun InitialBadgeCheckInUI(componentActivity: ComponentActivity,
     ) {
         Text(userInstructions)
         Button(onClick = {
-            val inventoryApi = getInventoryApiInstance()
+            val inventoryApi = getInventoryApiInstance(componentActivity)
             val userId = componentActivity.intent.getStringExtra("barcode_id") ?: return@Button
             val checkinCall = inventoryApi.checkinUser(userId)
             uploadUserPictureToInventory(inventoryApi, userId, imageFile).enqueue(object : Callback<ResponseBody> {

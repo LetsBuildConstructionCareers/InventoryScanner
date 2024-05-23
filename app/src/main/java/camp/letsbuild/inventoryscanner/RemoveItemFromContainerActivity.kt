@@ -23,7 +23,7 @@ class RemoveItemFromContainerActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val itemId = intent.getStringExtra("barcode_id") ?: return
-        val inventoryApi = getInventoryApiInstance()
+        val inventoryApi = getInventoryApiInstance(this)
         var containerId = ""
         inventoryApi.getParentOfItem(itemId).enqueue(object : Callback<String> {
             override fun onResponse(call: Call<String>, response: Response<String>) {

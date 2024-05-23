@@ -43,7 +43,6 @@ class NewItemActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val barcodeId = intent.getStringExtra("barcode_id")
-        getInventoryApiInstance()
         Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
         val imagePath = getExternalFilesDir(DIRECTORY_PICTURES) //File(filesDir, "images")
@@ -91,7 +90,7 @@ fun NewItemUI(componentActivity: ComponentActivity,
         var nameInput by remember { mutableStateOf("") }
         TextField(value = nameInput, onValueChange = {nameInput = it}, label = { Text("Item Name") }, placeholder = { Text("Enter Name for Item") })
         Button(onClick = {
-            val inventoryApi = getInventoryApiInstance()
+            val inventoryApi = getInventoryApiInstance(componentActivity)
             val barcodeId = componentActivity.intent.getStringExtra("barcode_id")
             if (barcodeId != null) {
                 uploadItemToInventory(inventoryApi, barcodeId, nameInput, imageFile).enqueue(object : Callback<ResponseBody> {

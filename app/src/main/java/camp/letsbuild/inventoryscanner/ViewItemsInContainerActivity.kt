@@ -24,7 +24,7 @@ class ViewItemsInContainerActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val containerId = intent.getStringExtra("barcode_id") ?: return
-        getInventoryApiInstance().getItemsInContainer(containerId).enqueue(object : Callback<List<Item>> {
+        getInventoryApiInstance(this).getItemsInContainer(containerId).enqueue(object : Callback<List<Item>> {
             override fun onResponse(call: Call<List<Item>>, response: Response<List<Item>>) {
                 val itemList = response.body()
                 if (response.isSuccessful && itemList != null) {
@@ -47,6 +47,7 @@ fun DisplayItemsUI(itemList: List<Item>, componentActivity: ComponentActivity, m
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(getItemPictureUrl(item.barcode_id))
+                        .addHeader(AUTHORIZATION, getAuthorization(componentActivity))
                         .crossfade(true)
                         .build(),
                     contentDescription = item.name,

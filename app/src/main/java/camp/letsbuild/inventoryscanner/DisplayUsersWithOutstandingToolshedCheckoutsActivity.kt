@@ -2,6 +2,7 @@ package camp.letsbuild.inventoryscanner
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -23,8 +24,10 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+private const val TAG = "DisplayUsersWithOutstandingToolshedCheckoutsActivity"
+
 fun launchDisplayUsersWithOutstandingToolshedCheckoutsActivity(componentActivity: ComponentActivity) {
-    getInventoryApiInstance().getUsersWithOutstandingToolshedCheckouts().enqueue(object : Callback<List<User>> {
+    getInventoryApiInstance(componentActivity).getUsersWithOutstandingToolshedCheckouts().enqueue(object : Callback<List<User>> {
         override fun onResponse(call: Call<List<User>>, response: Response<List<User>>) {
             if (response.isSuccessful) {
                 val intent = Intent(componentActivity, DisplayUsersWithOutstandingToolshedCheckoutsActivity::class.java)
@@ -34,6 +37,7 @@ fun launchDisplayUsersWithOutstandingToolshedCheckoutsActivity(componentActivity
         }
 
         override fun onFailure(call: Call<List<User>>, t: Throwable) {
+            Log.e(TAG, t.toString())
             TODO("Not yet implemented")
         }
     })
@@ -80,6 +84,7 @@ fun DisplayUsersWithOutstandingToolshedCheckoutsUI(usersWithCheckouts: Array<Use
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(getUserPictureUrl(user.barcode_id))
+                        .addHeader(AUTHORIZATION, getAuthorization(componentActivity))
                         .crossfade(true)
                         .build(),
                     contentDescription = user.name,

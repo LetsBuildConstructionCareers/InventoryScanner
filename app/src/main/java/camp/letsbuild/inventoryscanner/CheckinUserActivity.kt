@@ -22,7 +22,7 @@ class CheckinUserActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val userId = intent.getStringExtra("barcode_id") ?: return
-        val inventoryApi = getInventoryApiInstance()
+        val inventoryApi = getInventoryApiInstance(this)
         setContent {
             Column(
                 modifier = Modifier

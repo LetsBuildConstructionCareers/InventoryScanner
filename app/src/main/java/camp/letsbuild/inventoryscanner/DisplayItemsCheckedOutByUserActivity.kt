@@ -28,7 +28,7 @@ import retrofit2.Callback
 import retrofit2.Response
 
 fun launchDisplayItemsCheckedOutByUserActivity(userId: String, componentActivity: ComponentActivity) {
-    getInventoryApiInstance().getItemsCheckedOutByUser(userId).enqueue(object : Callback<List<Item>> {
+    getInventoryApiInstance(componentActivity).getItemsCheckedOutByUser(userId).enqueue(object : Callback<List<Item>> {
         override fun onResponse(call: Call<List<Item>>, response: Response<List<Item>>) {
             if (response.isSuccessful) {
                 val intent = Intent(componentActivity, DisplayItemsCheckedOutByUserViewerActivity::class.java)
@@ -110,6 +110,7 @@ fun DisplayItemsCheckedOutUI(items: Array<Item>, componentActivity: ComponentAct
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(getItemPictureUrl(item.barcode_id))
+                        .addHeader(AUTHORIZATION, getAuthorization(componentActivity))
                         .crossfade(true)
                         .build(),
                     contentDescription = item.name,

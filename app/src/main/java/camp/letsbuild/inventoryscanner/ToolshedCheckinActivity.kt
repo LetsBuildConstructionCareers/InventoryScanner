@@ -50,7 +50,7 @@ class ToolshedCheckinActivity : ComponentActivity() {
                 } else {
                     val intent = Intent(this, ToolshedCheckinConfirmUserActivity::class.java)
                     val itemId = scannedBarcode.contents
-                    val inventoryApi = getInventoryApiInstance()
+                    val inventoryApi = getInventoryApiInstance(this@ToolshedCheckinActivity)
                     inventoryApi.getItemsInContainer(itemId).enqueue(object : Callback<List<Item>> {
                         override fun onResponse(call: Call<List<Item>>, response: Response<List<Item>>) {
                             if (response.isSuccessful && response.body() != null) {
@@ -140,6 +140,7 @@ class ToolshedCheckinConfirmUserActivity : ComponentActivity() {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(getUserPictureUrl(userId))
+                            .addHeader(AUTHORIZATION, getAuthorization(this@ToolshedCheckinConfirmUserActivity))
                             .crossfade(true)
                             .build(),
                         contentDescription = ""
@@ -273,7 +274,7 @@ class ToolshedCheckinItemActivity : ComponentActivity() {
 }
 
 fun finishCheckinToToolshed(checkoutId: String?, itemId: String, userId: String, overrideJustification: String?, componentActivity: ComponentActivity) {
-    getInventoryApiInstance().checkinToToolshed(ToolshedCheckin(null, checkoutId, itemId, userId, System.currentTimeMillis() / 1000, overrideJustification, null))
+    getInventoryApiInstance(componentActivity).checkinToToolshed(ToolshedCheckin(null, checkoutId, itemId, userId, System.currentTimeMillis() / 1000, overrideJustification, null))
         .enqueue(object : Callback<ResponseBody> {
             override fun onResponse(
                 call: Call<ResponseBody>,
@@ -322,6 +323,7 @@ fun ToolshedAddMultipleItemsCheckinUI(
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(getItemPictureUrl(item.barcode_id))
+                        .addHeader(AUTHORIZATION, getAuthorization(componentActivity))
                         .crossfade(true)
                         .build(),
                     contentDescription = item.name,

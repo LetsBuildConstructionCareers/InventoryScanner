@@ -22,7 +22,7 @@ class CheckoutUserActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val userId = intent.getStringExtra("barcode_id") ?: return
-        val inventoryApi = getInventoryApiInstance()
+        val inventoryApi = getInventoryApiInstance(this)
         setContent {
             Column(modifier = Modifier
                     .fillMaxSize()
@@ -32,6 +32,7 @@ class CheckoutUserActivity : ComponentActivity() {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(getUserPictureUrl(userId))
+                        .addHeader(AUTHORIZATION, getAuthorization(this@CheckoutUserActivity))
                         .crossfade(true)
                         .build(),
                     contentDescription = ""

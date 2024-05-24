@@ -9,6 +9,8 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,17 +34,19 @@ class MainActivity : ComponentActivity() {
         val scannerForInitialBadgeCheckInActivity = scannerForNewActivity(this, InitialBadgeCheckInActivity::class.java)
         val scannerForCheckinUserActivity = scannerForNewActivity(this, CheckinUserActivity::class.java)
         val scannerForCheckoutUserActivity = scannerForNewActivity(this, CheckoutUserActivity::class.java)
+        val scannerForCreateUserWithoutPictureActivity = scannerForNewActivity(this, CreateUserWithoutPictureActivity::class.java)
         setContent {
             InventoryScannerTheme {
                 // A surface container using the 'background' color from the theme
-                ScannerApp(this,
+                ScanUi(this,
                     scannerForNewItemActivity,
                     scannerForDisplayItemActivity,
                     scannerForViewItemsInContainerActivity,
                     scannerForRemoveItemFromContainerActivity,
                     scannerForInitialBadgeCheckInActivity,
                     scannerForCheckinUserActivity,
-                    scannerForCheckoutUserActivity)
+                    scannerForCheckoutUserActivity,
+                    scannerForCreateUserWithoutPictureActivity)
             }
         }
     }
@@ -82,11 +86,12 @@ fun ScanUi(componentActivity: ComponentActivity,
            scannerForInitialBadgeCheckInActivity: ActivityResultLauncher<ScanOptions>,
            scannerForCheckinUserActivity: ActivityResultLauncher<ScanOptions>,
            scannerForCheckoutUserActivity: ActivityResultLauncher<ScanOptions>,
+           scannerForCreateUserWithoutPictureActivity: ActivityResultLauncher<ScanOptions>,
            modifier: Modifier = Modifier
                .fillMaxSize()
                .wrapContentSize(Alignment.Center)) {
     Column(
-        modifier = modifier,
+        modifier = modifier.verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Button(onClick = {
@@ -151,29 +156,8 @@ fun ScanUi(componentActivity: ComponentActivity,
         Button(onClick = { scannerForCheckoutUserActivity.launch(ScanOptions()) }) {
             Text("Badge Check-Out")
         }
-    }
-}
-
-//@Preview(showBackground = true)
-@Composable
-fun ScannerApp(
-    componentActivity: ComponentActivity,
-    scannerForNewItem: ActivityResultLauncher<ScanOptions>,
-    scannerForDisplayItem: ActivityResultLauncher<ScanOptions>,
-    scannerForViewItemsInContainerActivity: ActivityResultLauncher<ScanOptions>,
-    scannerForRemoveItemFromContainerActivity: ActivityResultLauncher<ScanOptions>,
-    scannerForInitialBadgeCheckInActivity: ActivityResultLauncher<ScanOptions>,
-    scannerForCheckinUserActivity: ActivityResultLauncher<ScanOptions>,
-    scannerForCheckoutUserActivity: ActivityResultLauncher<ScanOptions>
-) {
-    InventoryScannerTheme {
-        ScanUi(componentActivity,
-            scannerForNewItem,
-            scannerForDisplayItem,
-            scannerForViewItemsInContainerActivity,
-            scannerForRemoveItemFromContainerActivity,
-            scannerForInitialBadgeCheckInActivity,
-            scannerForCheckinUserActivity,
-            scannerForCheckoutUserActivity)
+        Button(onClick = { scannerForCreateUserWithoutPictureActivity.launch(ScanOptions()) }) {
+            Text("Create User without Picture")
+        }
     }
 }

@@ -1,8 +1,6 @@
 package camp.letsbuild.inventoryscanner
 
 import android.content.Context
-import android.content.res.Resources
-import android.net.Uri
 import android.util.Log
 import kotlinx.serialization.Serializable
 import okhttp3.Interceptor
@@ -30,7 +28,7 @@ import java.io.File
 private const val TAG = "InventoryClient"
 
 const val INVENTORY_SERVER = "https://inventory-server-service-wnjkb3ho2q-ul.a.run.app"
-//const val INVENTORY_SERVER = "https://10.23.1.200:5000"
+//const val INVENTORY_SERVER = "http://10.23.1.254:5000"
 const val AUTHORIZATION = "Authorization"
 
 fun getAuthorization(context: Context): String {
@@ -56,6 +54,7 @@ data class User(
     val name: String,
     val company: String,
     val picture_path: String,
+    val user_type: String,
     val description: String,
 ) : java.io.Serializable
 
@@ -137,6 +136,9 @@ interface InventoryApi {
 
     @POST("/inventory/api/v1.0/user-checkout/{user_id}")
     fun checkoutUser(@Path("user_id") userId: String): Call<ResponseBody>
+
+    @POST("/inventory/api/v1.0/users/")
+    fun createUserWithoutPicture(@Body user: User): Call<ResponseBody>
 }
 
 fun getInventoryApiInstance(context: Context, url: String = INVENTORY_SERVER): InventoryApi {

@@ -7,11 +7,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
@@ -40,10 +43,11 @@ class ViewItemsInContainerActivity : ComponentActivity() {
 }
 
 @Composable
-fun DisplayItemsUI(itemList: List<Item>, componentActivity: ComponentActivity, modifier: Modifier = Modifier) {
-    Column (verticalArrangement = Arrangement.SpaceBetween, modifier = Modifier.verticalScroll(rememberScrollState())) {
+fun DisplayItemsUI(itemList: List<Item>, componentActivity: ComponentActivity, modifier: Modifier = Modifier
+    .fillMaxSize().wrapContentSize(Alignment.Center)) {
+    Column (verticalArrangement = Arrangement.SpaceBetween, modifier = modifier.verticalScroll(rememberScrollState())) {
         for (item in itemList) {
-            Row {
+            Row(modifier = Modifier.fillMaxWidth()) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(getItemPictureUrl(item.barcode_id))

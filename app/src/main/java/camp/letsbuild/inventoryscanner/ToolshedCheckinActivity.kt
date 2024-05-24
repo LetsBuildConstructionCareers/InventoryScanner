@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -28,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanIntentResult
@@ -137,13 +139,14 @@ class ToolshedCheckinConfirmUserActivity : ComponentActivity() {
                         .wrapContentSize(Alignment.Center),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    AsyncImage(
+                    SubcomposeAsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(getUserPictureUrl(userId))
                             .addHeader(AUTHORIZATION, getAuthorization(this@ToolshedCheckinConfirmUserActivity))
                             .crossfade(true)
                             .build(),
-                        contentDescription = ""
+                        contentDescription = "",
+                        loading = { CircularProgressIndicator() }
                     )
                     Button(onClick = {
                         startActivity(checkinItemIntent)
@@ -297,15 +300,25 @@ fun ToolshedAddSingleItemCheckinUI(checkoutId: String?, itemId: String, userId: 
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AsyncImage(
+        SubcomposeAsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(getItemPictureUrl(itemId))
+                .addHeader(AUTHORIZATION, getAuthorization(componentActivity))
                 .crossfade(true)
                 .build(),
-            contentDescription = itemId
+            contentDescription = itemId,
+            loading = { CircularProgressIndicator() }
         )
-        Button(onClick = { finishCheckinToToolshed(checkoutId, itemId, userId, overrideJustification, componentActivity) }) {
-            Text("Confirm Check-In")
+        var waitingOnNetwork by remember { mutableStateOf(false) }
+        if (waitingOnNetwork) {
+            CircularProgressIndicator()
+        } else {
+            Button(onClick = {
+                waitingOnNetwork = true
+                finishCheckinToToolshed(checkoutId, itemId, userId, overrideJustification, componentActivity)
+            }) {
+                Text("Confirm Check-In")
+            }
         }
     }
 }
@@ -320,14 +333,15 @@ fun ToolshedAddMultipleItemsCheckinUI(
     )) {
         for (item in childItems) {
             Row {
-                AsyncImage(
+                SubcomposeAsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(getItemPictureUrl(item.barcode_id))
                         .addHeader(AUTHORIZATION, getAuthorization(componentActivity))
                         .crossfade(true)
                         .build(),
                     contentDescription = item.name,
-                    modifier = Modifier.fillMaxSize(0.25f)
+                    modifier = Modifier.fillMaxSize(0.25f),
+                    loading = { CircularProgressIndicator() }
                 )
                 Text(item.name)
                 if (scannedMap[item.barcode_id]!!) {
@@ -341,8 +355,16 @@ fun ToolshedAddMultipleItemsCheckinUI(
         Button(onClick = { scannerLauncher.launch(ScanOptions()) }, enabled = !scannedMap.values.reduce { left, right -> left && right }) {
             Text("Scan item in container")
         }
-        Button(onClick = { finishCheckinToToolshed(checkoutId, containerId, userId, overrideJustification, componentActivity) }, enabled = scannedMap.values.reduce { left, right -> left && right }) {
-            Text("Confirm Check-In")
+        var waitingOnNetwork by remember { mutableStateOf(false) }
+        if (waitingOnNetwork) {
+            CircularProgressIndicator()
+        } else {
+            Button(onClick = {
+                waitingOnNetwork = true
+                finishCheckinToToolshed(checkoutId, containerId, userId, overrideJustification, componentActivity)
+            }, enabled = scannedMap.values.reduce { left, right -> left && right }) {
+                Text("Confirm Check-In")
+            }
         }
     }
 }

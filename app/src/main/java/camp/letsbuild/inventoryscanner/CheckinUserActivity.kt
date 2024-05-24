@@ -7,11 +7,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import okhttp3.ResponseBody
 import retrofit2.Call
@@ -30,23 +36,32 @@ class CheckinUserActivity : ComponentActivity() {
                     .wrapContentSize(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                AsyncImage(
+                SubcomposeAsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(getUserPictureUrl(userId))
                         .crossfade(true)
                         .build(),
-                    contentDescription = ""
+                    contentDescription = "",
+                    loading = { CircularProgressIndicator() }
                 )
-                Button(onClick = { inventoryApi.checkinUser(userId).enqueue(object : Callback<ResponseBody> {
-                    override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                        this@CheckinUserActivity.finish()
-                    }
+                var waitingOnNetwork by remember { mutableStateOf(false) }
+                if (waitingOnNetwork) {
+                    CircularProgressIndicator()
+                } else {
+                    Button(onClick = {
+                        waitingOnNetwork = true
+                        inventoryApi.checkinUser(userId).enqueue(object : Callback<ResponseBody> {
+                            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                                this@CheckinUserActivity.finish()
+                            }
 
-                    override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                        TODO("Not yet implemented")
+                            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                                TODO("Not yet implemented")
+                            }
+                        })
+                    }) {
+                        Text("Confirm Checkin")
                     }
-                }) }) {
-                    Text("Confirm Checkin")
                 }
             }
         }

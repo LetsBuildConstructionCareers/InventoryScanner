@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -89,26 +90,34 @@ fun NewItemUI(componentActivity: ComponentActivity,
         imageView.setImageBitmap(BitmapFactory.decodeFile(imageFile.path))
         var nameInput by remember { mutableStateOf("") }
         TextField(value = nameInput, onValueChange = {nameInput = it}, label = { Text("Item Name") }, placeholder = { Text("Enter Name for Item") })
-        Button(onClick = {
-            val inventoryApi = getInventoryApiInstance(componentActivity)
-            val barcodeId = componentActivity.intent.getStringExtra("barcode_id")
-            if (barcodeId != null) {
-                uploadItemToInventory(inventoryApi, barcodeId, nameInput, imageFile).enqueue(object : Callback<ResponseBody> {
-                    override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                        Log.i(TAG, response.message())
-                        Toast.makeText(componentActivity, response.message(), Toast.LENGTH_LONG).show();
-                        componentActivity.finish()
-                    }
+        var waitingOnNetwork by remember { mutableStateOf(false) }
+        if (waitingOnNetwork) {
+            CircularProgressIndicator()
+        } else {
+            Button(onClick = {
+                val inventoryApi = getInventoryApiInstance(componentActivity)
+                val barcodeId = componentActivity.intent.getStringExtra("barcode_id")
+                waitingOnNetwork = true
+                if (barcodeId != null) {
+                    uploadItemToInventory(inventoryApi, barcodeId, nameInput, imageFile).enqueue(
+                        object : Callback<ResponseBody> {
+                            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                                Log.i(TAG, response.message())
+                                Toast.makeText(componentActivity, response.message(), Toast.LENGTH_LONG).show();
+                                componentActivity.finish()
+                            }
 
-                    override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                        Log.i(TAG, t.message, t)
-                        Toast.makeText(componentActivity, t.message, Toast.LENGTH_LONG).show();
-                    }
+                            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                                Log.i(TAG, t.message, t)
+                                waitingOnNetwork = false
+                                Toast.makeText(componentActivity, t.message, Toast.LENGTH_LONG).show();
+                            }
 
-                })
+                        })
+                }
+            }) {
+                Text("Finish")
             }
-        }) {
-            Text("Finish")
         }
     }
 }

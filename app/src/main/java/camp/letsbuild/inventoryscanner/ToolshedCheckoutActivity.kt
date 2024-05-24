@@ -9,11 +9,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanIntentResult
@@ -51,7 +57,9 @@ class ToolshedCheckoutActivity : ComponentActivity() {
             }
         }//scannerForNewActivity(this, ToolshedCheckoutItemForUserActivity::class.java)
         setContent {
-            Column(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.Center),
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .wrapContentSize(Alignment.Center),
                    horizontalAlignment = Alignment.CenterHorizontally) {
                 Button(onClick = { scannerForBadge.launch(ScanOptions()) }) {
                     Text("Scan Badge")
@@ -95,15 +103,18 @@ class ToolshedCheckoutItemForUserActivity : ComponentActivity() {
             return
         }
         setContent {
-            Column(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.Center),
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .wrapContentSize(Alignment.Center),
                    horizontalAlignment = Alignment.CenterHorizontally) {
-                AsyncImage(
+                SubcomposeAsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(getUserPictureUrl(userId))
                         .addHeader(AUTHORIZATION, getAuthorization(this@ToolshedCheckoutItemForUserActivity))
                         .crossfade(true)
                         .build(),
-                    contentDescription = ""
+                    contentDescription = "",
+                    loading = { CircularProgressIndicator() }
                 )
                 Button(onClick = { scannerForToolshedCheckoutFinalize.launch(ScanOptions()) }) {
                     Text("Scan Item")
@@ -126,28 +137,37 @@ class ToolshedCheckoutItemFinalizeActivity : ComponentActivity() {
         }
         val inventoryApi = getInventoryApiInstance(this)
         setContent {
-            Column(modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.Center),
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .wrapContentSize(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally) {
-                AsyncImage(
+                SubcomposeAsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(getItemPictureUrl(itemId))
                         .crossfade(true)
                         .build(),
-                    contentDescription = ""
+                    contentDescription = "",
+                    loading = { CircularProgressIndicator() }
                 )
-                Button(onClick = {
-                    inventoryApi.checkoutFromToolshed(ToolshedCheckout("", itemId, userId, System.currentTimeMillis() / 1000))
-                        .enqueue(object : Callback<ResponseBody> {
-                            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                                this@ToolshedCheckoutItemFinalizeActivity.finish()
-                            }
+                var waitingOnNetwork by remember { mutableStateOf(false) }
+                if (waitingOnNetwork) {
+                    CircularProgressIndicator()
+                } else {
+                    Button(onClick = {
+                        waitingOnNetwork = true
+                        inventoryApi.checkoutFromToolshed(ToolshedCheckout("", itemId, userId, System.currentTimeMillis() / 1000))
+                            .enqueue(object : Callback<ResponseBody> {
+                                override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                                    this@ToolshedCheckoutItemFinalizeActivity.finish()
+                                }
 
-                            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                                TODO("Not yet implemented")
-                            }
-                        })
-                }) {
-                    Text("Checkout Item")
+                                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                                    TODO("Not yet implemented")
+                                }
+                            })
+                    }) {
+                        Text("Checkout Item")
+                    }
                 }
             }
         }

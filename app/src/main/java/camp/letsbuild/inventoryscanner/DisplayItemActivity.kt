@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -15,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import camp.letsbuild.inventoryscanner.ui.theme.InventoryScannerTheme
 import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.journeyapps.barcodescanner.ScanOptions
 import retrofit2.Call
@@ -61,13 +63,14 @@ fun DisplayItemUI(barcodeId: String, itemName: String, componentActivity: Compon
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AsyncImage(
+        SubcomposeAsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(getItemPictureUrl(barcodeId))
                 .addHeader(AUTHORIZATION, getAuthorization(componentActivity))
                 .crossfade(true)
                 .build(),
-            contentDescription = itemName
+            contentDescription = itemName,
+            loading = { CircularProgressIndicator() }
         )
     }
 }

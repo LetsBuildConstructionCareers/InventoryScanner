@@ -14,8 +14,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
@@ -101,34 +106,44 @@ fun InitialBadgeCheckInUI(componentActivity: ComponentActivity,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(userInstructions)
-        Button(onClick = {
-            val inventoryApi = getInventoryApiInstance(componentActivity)
-            val userId = componentActivity.intent.getStringExtra("barcode_id") ?: return@Button
-            val checkinCall = inventoryApi.checkinUser(userId)
-            uploadUserPictureToInventory(inventoryApi, userId, imageFile).enqueue(object : Callback<ResponseBody> {
-                override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                    checkinCall.enqueue(object : Callback<ResponseBody> {
-                        override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                            Log.i(TAG, response.message())
-                            Toast.makeText(componentActivity, response.message(), Toast.LENGTH_LONG).show();
-                            componentActivity.finish()
-                        }
+        var waitingOnNetwork by remember { mutableStateOf(false) }
+        if (waitingOnNetwork) {
+            CircularProgressIndicator()
+        } else {
+            Button(onClick = {
+                waitingOnNetwork = true
+                val inventoryApi = getInventoryApiInstance(componentActivity)
+                val userId = componentActivity.intent.getStringExtra("barcode_id") ?: return@Button
+                val checkinCall = inventoryApi.checkinUser(userId)
+                uploadUserPictureToInventory(inventoryApi, userId, imageFile).enqueue(object :
+                    Callback<ResponseBody> {
+                    override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                        checkinCall.enqueue(object : Callback<ResponseBody> {
+                            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                                waitingOnNetwork = false
+                                Log.i(TAG, response.message())
+                                Toast.makeText(componentActivity, response.message(), Toast.LENGTH_LONG).show();
+                                componentActivity.finish()
+                            }
 
-                        override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                            Log.i(TAG, t.message, t)
-                            Toast.makeText(componentActivity, t.message, Toast.LENGTH_LONG).show();
-                        }
-                    })
+                            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                                waitingOnNetwork = false
+                                Log.i(TAG, t.message, t)
+                                Toast.makeText(componentActivity, t.message, Toast.LENGTH_LONG).show();
+                            }
+                        })
 
-                }
+                    }
 
-                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                    Log.i(TAG, t.message, t)
-                    Toast.makeText(componentActivity, t.message, Toast.LENGTH_LONG).show();
-                }
-            })
-        }) {
-            Text("Confirm Check-In")
+                    override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                        waitingOnNetwork = false
+                        Log.i(TAG, t.message, t)
+                        Toast.makeText(componentActivity, t.message, Toast.LENGTH_LONG).show();
+                    }
+                })
+            }) {
+                Text("Confirm Check-In")
+            }
         }
     }
 }

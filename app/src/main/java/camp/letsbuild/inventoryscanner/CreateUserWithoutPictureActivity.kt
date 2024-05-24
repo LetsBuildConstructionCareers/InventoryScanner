@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -56,21 +57,27 @@ class CreateUserWithoutPictureActivity : ComponentActivity() {
                 }
                 var description by remember { mutableStateOf("") }
                 TextField(value = description, onValueChange = { description = it}, label = { Text("Additional Info") }, placeholder = { Text("Enter any additional info") })
-                Button(onClick = {
-                    getInventoryApiInstance(this@CreateUserWithoutPictureActivity)
-                        .createUserWithoutPicture(User(barcodeId, nameInput, company, "", selectedUserType, description))
-                        .enqueue(object : Callback<ResponseBody> {
-                            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                                finish()
-                            }
+                var waitingOnNetwork by remember { mutableStateOf(false) }
+                if (waitingOnNetwork) {
+                    CircularProgressIndicator()
+                } else {
+                    Button(onClick = {
+                        waitingOnNetwork = true
+                        getInventoryApiInstance(this@CreateUserWithoutPictureActivity)
+                            .createUserWithoutPicture(User(barcodeId, nameInput, company, "", selectedUserType, description))
+                            .enqueue(object : Callback<ResponseBody> {
+                                override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                                    finish()
+                                }
 
-                            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                                Log.e(TAG, t.toString())
-                                TODO("Not yet implemented")
-                            }
-                        })
-                }) {
-                    Text("Done")
+                                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                                    Log.e(TAG, t.toString())
+                                    TODO("Not yet implemented")
+                                }
+                            })
+                    }) {
+                        Text("Done")
+                    }
                 }
             }
         }

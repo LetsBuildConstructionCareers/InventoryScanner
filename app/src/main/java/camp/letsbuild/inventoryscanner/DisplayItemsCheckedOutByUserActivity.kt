@@ -13,12 +13,14 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanIntentResult
@@ -107,14 +109,15 @@ fun DisplayItemsCheckedOutUI(items: Array<Item>, componentActivity: ComponentAct
     )) {
         for (item in items) {
             Row {
-                AsyncImage(
+                SubcomposeAsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(getItemPictureUrl(item.barcode_id))
                         .addHeader(AUTHORIZATION, getAuthorization(componentActivity))
                         .crossfade(true)
                         .build(),
                     contentDescription = item.name,
-                    modifier = Modifier.fillMaxSize(0.25f)
+                    modifier = Modifier.fillMaxSize(0.25f),
+                    loading = { CircularProgressIndicator() }
                 )
                 Text(item.name)
             }

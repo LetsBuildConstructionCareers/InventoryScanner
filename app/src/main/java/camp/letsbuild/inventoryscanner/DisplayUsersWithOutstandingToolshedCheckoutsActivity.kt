@@ -13,12 +13,14 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import retrofit2.Call
 import retrofit2.Callback
@@ -81,14 +83,15 @@ fun DisplayUsersWithOutstandingToolshedCheckoutsUI(usersWithCheckouts: Array<Use
     )) {
         for (user in usersWithCheckouts) {
             Row {
-                AsyncImage(
+                SubcomposeAsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(getUserPictureUrl(user.barcode_id))
                         .addHeader(AUTHORIZATION, getAuthorization(componentActivity))
                         .crossfade(true)
                         .build(),
                     contentDescription = user.name,
-                    modifier = Modifier.fillMaxSize(0.25f)
+                    modifier = Modifier.fillMaxSize(0.25f),
+                    loading = { CircularProgressIndicator() }
                 )
                 Text(user.name)
                 Button(onClick = { launchDisplayItemsCheckedOutByUserActivity(user.barcode_id, componentActivity) }) {

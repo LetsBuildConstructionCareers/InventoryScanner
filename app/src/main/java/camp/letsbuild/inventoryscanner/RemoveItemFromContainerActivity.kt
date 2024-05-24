@@ -8,11 +8,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import okhttp3.ResponseBody
 import retrofit2.Call
@@ -47,23 +53,32 @@ class RemoveItemFromContainerActivity : ComponentActivity() {
                 .fillMaxSize()
                 .wrapContentSize(Alignment.Center),
                    horizontalAlignment = Alignment.CenterHorizontally) {
-                AsyncImage(
+                SubcomposeAsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(getItemPictureUrl(itemId))
                         .crossfade(true)
                         .build(),
-                    contentDescription = ""
+                    contentDescription = "",
+                    loading = { CircularProgressIndicator() }
                 )
-                Button(onClick = { inventoryApi.removeItemFromContainer(containerId, itemId).enqueue(object : Callback<ResponseBody> {
-                    override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                        this@RemoveItemFromContainerActivity.finish()
-                    }
+                var waitingOnNetwork by remember { mutableStateOf(false) }
+                if (waitingOnNetwork) {
+                    CircularProgressIndicator()
+                } else {
+                    Button(onClick = {
+                        waitingOnNetwork = true
+                        inventoryApi.removeItemFromContainer(containerId, itemId).enqueue(object : Callback<ResponseBody> {
+                            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                                this@RemoveItemFromContainerActivity.finish()
+                            }
 
-                    override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                        TODO("Not yet implemented")
+                            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                                TODO("Not yet implemented")
+                            }
+                        })
+                    }) {
+                        Text("Confirm Remove Item")
                     }
-                }) }) {
-                    Text("Confirm Remove Item")
                 }
             }
         }

@@ -11,12 +11,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanIntentResult
@@ -33,7 +39,9 @@ class AddItemsToContainerLandingActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val scannerLauncher = scannerForNewActivity(this, AddItemsToContainerActivity::class.java)
         setContent {
-            Column (modifier = Modifier.fillMaxSize().wrapContentSize(Alignment.Center),
+            Column (modifier = Modifier
+                .fillMaxSize()
+                .wrapContentSize(Alignment.Center),
                     horizontalAlignment = Alignment.CenterHorizontally) {
                 Button(onClick = { scannerLauncher.launch(ScanOptions()) }) {
                     Text("Scan Container")
@@ -101,14 +109,15 @@ fun AddItemsToContainerUI(containerId: String, containerShortId: String,
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Container: " + containerShortId)
-        AsyncImage(
+        Text("Container: $containerShortId")
+        SubcomposeAsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(getItemPictureUrl(containerId))
                 .addHeader(AUTHORIZATION, getAuthorization(componentActivity))
                 .crossfade(true)
                 .build(),
-            contentDescription = containerShortId
+            contentDescription = containerShortId,
+            loading = { CircularProgressIndicator() }
         )
         Button(onClick = { scannerForAddSingleItem.launch(ScanOptions())}) {
             Text("Scan Item into Container")
@@ -144,28 +153,36 @@ fun AddSingleItemToContainerUI(itemId: String, containerId: String,
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AsyncImage(
+        SubcomposeAsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(getItemPictureUrl(itemId))
                 .addHeader(AUTHORIZATION, getAuthorization(componentActivity))
                 .crossfade(true)
                 .build(),
-            contentDescription = "Picture of Item"
+            contentDescription = "Picture of Item",
+            loading = { CircularProgressIndicator() }
         )
-        Button(onClick = {
-            val inventoryApi = getInventoryApiInstance(componentActivity)
-            inventoryApi.addItemsToContainer(containerId, listOf(itemId)).enqueue(object : Callback<ResponseBody> {
-                override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                    Toast.makeText(componentActivity, response.message(), Toast.LENGTH_LONG).show()
-                    componentActivity.finish()
-                }
+        var waitingOnNetwork by remember { mutableStateOf(false) }
+        if (waitingOnNetwork) {
+            CircularProgressIndicator()
+        } else {
+            Button(onClick = {
+                waitingOnNetwork = true
+                val inventoryApi = getInventoryApiInstance(componentActivity)
+                inventoryApi.addItemsToContainer(containerId, listOf(itemId)).enqueue(object : Callback<ResponseBody> {
+                    override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                        Toast.makeText(componentActivity, response.message(), Toast.LENGTH_LONG)
+                            .show()
+                        componentActivity.finish()
+                    }
 
-                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                    TODO("Not yet implemented")
-                }
-            })
-        }) {
-            Text("Add Item to Container")
+                    override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                        TODO("Not yet implemented")
+                    }
+                })
+            }) {
+                Text("Add Item to Container")
+            }
         }
     }
 }

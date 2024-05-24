@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
         val scannerForDisplayItemActivity = scannerForDisplayItemResultLauncher(this)
         val scannerForViewItemsInContainerActivity = scannerForNewActivity(this, ViewItemsInContainerActivity::class.java)
         val scannerForRemoveItemFromContainerActivity = scannerForNewActivity(this, RemoveItemFromContainerActivity::class.java)
-        val scannerForInitialBadgeCheckInActivity = scannerForNewActivity(this, InitialBadgeCheckInActivity::class.java)
+        //val scannerForInitialBadgeCheckInActivity = scannerForNewActivity(this, InitialBadgeCheckInActivity::class.java)
         val scannerForCheckinUserActivity = scannerForNewActivity(this, CheckinUserActivity::class.java)
         val scannerForCheckoutUserActivity = scannerForNewActivity(this, CheckoutUserActivity::class.java)
         val scannerForCreateUserWithoutPictureActivity = scannerForNewActivity(this, CreateUserWithoutPictureActivity::class.java)
@@ -43,7 +43,6 @@ class MainActivity : ComponentActivity() {
                     scannerForDisplayItemActivity,
                     scannerForViewItemsInContainerActivity,
                     scannerForRemoveItemFromContainerActivity,
-                    scannerForInitialBadgeCheckInActivity,
                     scannerForCheckinUserActivity,
                     scannerForCheckoutUserActivity,
                     scannerForCreateUserWithoutPictureActivity)
@@ -83,7 +82,6 @@ fun ScanUi(componentActivity: ComponentActivity,
            scannerForDisplayItem: ActivityResultLauncher<ScanOptions>,
            scannerForViewItemsInContainerActivity: ActivityResultLauncher<ScanOptions>,
            scannerForRemoveItemFromContainerActivity: ActivityResultLauncher<ScanOptions>,
-           scannerForInitialBadgeCheckInActivity: ActivityResultLauncher<ScanOptions>,
            scannerForCheckinUserActivity: ActivityResultLauncher<ScanOptions>,
            scannerForCheckoutUserActivity: ActivityResultLauncher<ScanOptions>,
            scannerForCreateUserWithoutPictureActivity: ActivityResultLauncher<ScanOptions>,
@@ -147,7 +145,10 @@ fun ScanUi(componentActivity: ComponentActivity,
         Button(onClick = { scannerForDisplayItem.launch(ScanOptions()) }) {
             Text(text = "Scan Existing Item")
         }
-        Button(onClick = { scannerForInitialBadgeCheckInActivity.launch(ScanOptions()) }) {
+        Button(onClick = {
+            val intent = Intent(componentActivity, InitialBadgeCheckInLandingActivity::class.java)
+            componentActivity.startActivity(intent)
+        }) {
             Text("Initial Badge Check-In")
         }
         Button(onClick = { scannerForCheckinUserActivity.launch(ScanOptions()) }) {

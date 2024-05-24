@@ -1,5 +1,6 @@
 package camp.letsbuild.inventoryscanner
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
@@ -29,6 +30,9 @@ import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanIntentResult
+import com.journeyapps.barcodescanner.ScanOptions
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
@@ -39,35 +43,65 @@ import java.util.Date
 
 private const val TAG = "InitialBadgeCheckInActivity"
 
-class InitialBadgeCheckInActivity : ComponentActivity() {
+class InitialBadgeCheckInLandingActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val barcodeId = intent.getStringExtra("barcode_id") ?: return
-
-        var userInstructions = ""
-        getInventoryApiInstance(this).getUser(barcodeId).enqueue(object : Callback<User> {
-            override fun onResponse(call: Call<User>, response: Response<User>) {
-                Log.d(TAG, response.toString())
-                Log.d(TAG, response.body().toString())
-                if (response.isSuccessful && response.body() != null) {
-                    val user = response.body()
-                    @Suppress("SENSELESS_COMPARISON")
-                    if (user != null && (user.picture_path == null || user.picture_path.isBlank())) {
-                        userInstructions = user.description
-                    } else {
-                        Toast.makeText(this@InitialBadgeCheckInActivity, "User has already checked-in.", Toast.LENGTH_LONG).show()
-                        this@InitialBadgeCheckInActivity.finish()
-                    }
+        val scannerLauncher = registerForActivityResult(ScanContract()) { scannedBarcode: ScanIntentResult ->
+            run {
+                if (scannedBarcode.contents == null) {
+                    Toast.makeText(this@InitialBadgeCheckInLandingActivity, "Cancelled", Toast.LENGTH_LONG).show();
                 } else {
-                    Toast.makeText(this@InitialBadgeCheckInActivity, "User is not pre-registered.", Toast.LENGTH_LONG).show()
+                    val intent = Intent(this@InitialBadgeCheckInLandingActivity, InitialBadgeCheckInTakePictureActivity::class.java)
+                    val userId = scannedBarcode.contents
+                    intent.putExtra("barcode_id", userId)
+                    getInventoryApiInstance(this).getUser(userId).enqueue(object : Callback<User> {
+                        override fun onResponse(call: Call<User>, response: Response<User>) {
+                            Log.d(TAG, response.toString())
+                            Log.d(TAG, response.body().toString())
+                            if (response.isSuccessful && response.body() != null) {
+                                val user = response.body()
+                                @Suppress("SENSELESS_COMPARISON")
+                                if (user != null && (user.picture_path == null || user.picture_path.isBlank())) {
+                                    intent.putExtra("user", user)
+                                    startActivity(intent)
+                                    finish()
+                                } else {
+                                    Toast.makeText(this@InitialBadgeCheckInLandingActivity, "User has already checked-in.", Toast.LENGTH_LONG).show()
+                                }
+                            } else {
+                                Toast.makeText(this@InitialBadgeCheckInLandingActivity, "User is not pre-registered.", Toast.LENGTH_LONG).show()
+                            }
+                        }
+
+                        override fun onFailure(call: Call<User>, t: Throwable) {
+                            TODO("Not yet implemented")
+                        }
+                    })
                 }
             }
-
-            override fun onFailure(call: Call<User>, t: Throwable) {
-                TODO("Not yet implemented")
+        }
+        setContent {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .wrapContentSize(Alignment.Center),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Button(onClick = { scannerLauncher.launch(ScanOptions()) }) {
+                    Text("Scan User")
+                }
             }
-        })
+        }
+    }
+}
 
+class InitialBadgeCheckInTakePictureActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val user = intent.getSerializableExtra("user") as User? ?: return
+        val barcodeId = user.barcode_id
+        val intent = Intent(this, InitialBadgeCheckInActivity::class.java)
+        intent.putExtra("user", user)
         val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
         val imagePath = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         val file = File.createTempFile(
@@ -77,7 +111,11 @@ class InitialBadgeCheckInActivity : ComponentActivity() {
         val uri = FileProvider.getUriForFile(this, applicationContext.packageName + ".fileprovider", file)
         val cameraLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
             run {
-                if (success && barcodeId?.isNotBlank() == true) {
+                if (success) {
+                    Log.d(TAG, "updating pictureTaken")
+                    intent.putExtra("picture_file", file)
+                    startActivity(intent)
+                    finish()
                 } else {
                     if (!success) {
                         Log.e(TAG, "Picture taking failed.")
@@ -89,15 +127,45 @@ class InitialBadgeCheckInActivity : ComponentActivity() {
                 }
             }
         }
-        cameraLauncher.launch(uri)
-        setContent { InitialBadgeCheckInUI(this, file, userInstructions) }
+        setContent {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .wrapContentSize(Alignment.Center),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Button(onClick = { cameraLauncher.launch(uri) }) {
+                    Text("Take User Picture")
+                }
+            }
+        }
+    }
+}
+
+class InitialBadgeCheckInActivity : ComponentActivity() {
+    private var pictureTaken = false
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.run { putBoolean("pictureTaken", pictureTaken) }
+        super.onSaveInstanceState(outState)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (savedInstanceState != null) {
+            with(savedInstanceState) { pictureTaken = getBoolean("pictureTaken") }
+        }
+        val user = intent.getSerializableExtra("user") as User? ?: return
+        val file = intent.getSerializableExtra("picture_file") as File? ?: return
+
+        setContent { InitialBadgeCheckInUI(this, file, user) }
     }
 }
 
 @Composable
 fun InitialBadgeCheckInUI(componentActivity: ComponentActivity,
                           imageFile: File,
-                          userInstructions: String,
+                          user: User,
               modifier: Modifier = Modifier
                   .fillMaxSize()
                   .wrapContentSize(Alignment.Center)) {
@@ -105,7 +173,7 @@ fun InitialBadgeCheckInUI(componentActivity: ComponentActivity,
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(userInstructions)
+        Text(user.description)
         var waitingOnNetwork by remember { mutableStateOf(false) }
         if (waitingOnNetwork) {
             CircularProgressIndicator()
@@ -113,7 +181,7 @@ fun InitialBadgeCheckInUI(componentActivity: ComponentActivity,
             Button(onClick = {
                 waitingOnNetwork = true
                 val inventoryApi = getInventoryApiInstance(componentActivity)
-                val userId = componentActivity.intent.getStringExtra("barcode_id") ?: return@Button
+                val userId = user.barcode_id
                 val checkinCall = inventoryApi.checkinUser(userId)
                 uploadUserPictureToInventory(inventoryApi, userId, imageFile).enqueue(object :
                     Callback<ResponseBody> {

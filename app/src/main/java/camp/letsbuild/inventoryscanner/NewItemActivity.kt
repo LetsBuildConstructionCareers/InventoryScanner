@@ -41,8 +41,18 @@ import java.util.Date
 private const val TAG = "NewItemActivity"
 
 class NewItemActivity : ComponentActivity() {
+    private var pictureTaken = false
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.run { putBoolean("pictureTaken", pictureTaken) }
+        super.onSaveInstanceState(outState)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (savedInstanceState != null) {
+            with(savedInstanceState) { pictureTaken = getBoolean("pictureTaken") }
+        }
         val barcodeId = intent.getStringExtra("barcode_id")
         Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
@@ -55,6 +65,7 @@ class NewItemActivity : ComponentActivity() {
         val cameraLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) {success ->
             run {
                 if (success && barcodeId?.isNotBlank() == true) {
+                    pictureTaken = true
                 } else {
                     if (!success) {
                         Log.e(TAG, "Picture taking failed.")
@@ -66,7 +77,9 @@ class NewItemActivity : ComponentActivity() {
                 }
             }
         }
-        cameraLauncher.launch(uri)
+        if (!pictureTaken) {
+            cameraLauncher.launch(uri)
+        }
         setContent {
             InventoryScannerTheme {
                 // A surface container using the 'background' color from the theme

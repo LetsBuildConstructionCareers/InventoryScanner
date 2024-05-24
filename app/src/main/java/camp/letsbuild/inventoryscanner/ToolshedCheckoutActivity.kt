@@ -2,6 +2,7 @@ package camp.letsbuild.inventoryscanner
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -29,6 +30,8 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+private const val TAG = "ToolshedCheckoutActivity"
+
 class ToolshedCheckoutActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,6 +53,7 @@ class ToolshedCheckoutActivity : ComponentActivity() {
                         }
 
                         override fun onFailure(call: Call<User>, t: Throwable) {
+                            Log.e(TAG, t.toString())
                             TODO("Not yet implemented")
                         }
                     })
@@ -144,6 +148,7 @@ class ToolshedCheckoutItemFinalizeActivity : ComponentActivity() {
                 SubcomposeAsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(getItemPictureUrl(itemId))
+                        .addHeader(AUTHORIZATION, getAuthorization(this@ToolshedCheckoutItemFinalizeActivity))
                         .crossfade(true)
                         .build(),
                     contentDescription = "",

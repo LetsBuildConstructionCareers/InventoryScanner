@@ -35,33 +35,51 @@ class CheckoutUserActivity : ComponentActivity() {
                 .wrapContentSize(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                SubcomposeAsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(getUserPictureUrl(userId))
-                        .addHeader(AUTHORIZATION, getAuthorization(this@CheckoutUserActivity))
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "",
-                    loading = { CircularProgressIndicator() }
-                )
-                var waitingOnNetwork by remember { mutableStateOf(false) }
-                if (waitingOnNetwork) {
-                    CircularProgressIndicator()
-                } else {
-                    Button(onClick = {
-                        waitingOnNetwork = true
-                        inventoryApi.checkoutUser(userId).enqueue(object : Callback<ResponseBody> {
-                            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                                this@CheckoutUserActivity.finish()
-                            }
+                var userExists by remember { mutableStateOf(true) }
+                var checkedUserExists by remember { mutableStateOf(false) }
+                if (!checkedUserExists) {
+                    inventoryApi.getUser(userId).enqueue(object : Callback<User> {
+                        override fun onResponse(call: Call<User>, response: Response<User>) {
+                            checkedUserExists = true
+                            userExists = response.isSuccessful && response.body() != null
+                        }
 
-                            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                                TODO("Not yet implemented")
-                            }
-                        })
-                    }) {
-                        Text("Confirm Checkout")
+                        override fun onFailure(call: Call<User>, t: Throwable) {
+                            TODO("Not yet implemented")
+                        }
+                    })
+                }
+                if (userExists) {
+                    SubcomposeAsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(getUserPictureUrl(userId))
+                            .addHeader(AUTHORIZATION, getAuthorization(this@CheckoutUserActivity))
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "",
+                        loading = { CircularProgressIndicator() }
+                    )
+                    var waitingOnNetwork by remember { mutableStateOf(false) }
+                    if (waitingOnNetwork) {
+                        CircularProgressIndicator()
+                    } else {
+                        Button(onClick = {
+                            waitingOnNetwork = true
+                            inventoryApi.checkoutUser(userId).enqueue(object : Callback<ResponseBody> {
+                                override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                                    this@CheckoutUserActivity.finish()
+                                }
+
+                                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                                    TODO("Not yet implemented")
+                                }
+                            })
+                        }) {
+                            Text("Confirm Checkout")
+                        }
                     }
+                } else {
+                    Text("User does not exist!!")
                 }
             }
         }

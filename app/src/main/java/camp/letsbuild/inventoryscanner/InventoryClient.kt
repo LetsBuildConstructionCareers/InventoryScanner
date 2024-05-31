@@ -56,6 +56,7 @@ data class User(
     val picture_path: String,
     val user_type: String,
     val description: String,
+    val initial_checkin_info: String,
 ) : java.io.Serializable
 
 @Serializable

@@ -173,6 +173,7 @@ fun InitialBadgeCheckInUI(componentActivity: ComponentActivity,
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Text(user.initial_checkin_info)
         Text(user.description)
         var waitingOnNetwork by remember { mutableStateOf(false) }
         if (waitingOnNetwork) {

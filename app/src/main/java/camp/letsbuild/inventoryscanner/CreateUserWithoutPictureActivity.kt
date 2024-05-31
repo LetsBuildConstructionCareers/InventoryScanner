@@ -57,6 +57,8 @@ class CreateUserWithoutPictureActivity : ComponentActivity() {
                 }
                 var description by remember { mutableStateOf("") }
                 TextField(value = description, onValueChange = { description = it}, label = { Text("Additional Info") }, placeholder = { Text("Enter any additional info") })
+                var firstTimeCheckinInfo by remember { mutableStateOf("") }
+                TextField(value = firstTimeCheckinInfo, onValueChange = { firstTimeCheckinInfo = it}, label = { Text("Initial Checkin Info") }, placeholder = { Text("Enter any info for first checking (e.g. t-shirt size)") })
                 var waitingOnNetwork by remember { mutableStateOf(false) }
                 if (waitingOnNetwork) {
                     CircularProgressIndicator()
@@ -64,7 +66,7 @@ class CreateUserWithoutPictureActivity : ComponentActivity() {
                     Button(onClick = {
                         waitingOnNetwork = true
                         getInventoryApiInstance(this@CreateUserWithoutPictureActivity)
-                            .createUserWithoutPicture(User(barcodeId, nameInput, company, "", selectedUserType, description))
+                            .createUserWithoutPicture(User(barcodeId, nameInput, company, "", selectedUserType, description, firstTimeCheckinInfo))
                             .enqueue(object : Callback<ResponseBody> {
                                 override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                                     finish()

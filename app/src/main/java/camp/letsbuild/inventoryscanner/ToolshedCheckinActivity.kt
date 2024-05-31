@@ -78,6 +78,7 @@ class ToolshedCheckinActivity : ComponentActivity() {
                                                 }
                                             })
                                         } else {
+                                            Log.e(TAG, response.toString())
                                             TODO("Not yet implemented")
                                         }
                                     }
@@ -181,10 +182,11 @@ class ToolshedCheckinOverrideUserActivity : ComponentActivity() {
         val scannerLauncher = registerForActivityResult(ScanContract()) { scannedBarcode: ScanIntentResult ->
             run {
                 if (scannedBarcode.contents == null) {
-                    Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Cancelled", Toast.LENGTH_LONG).show()
                 } else {
                     checkinItemIntent.putExtra("userId", scannedBarcode.contents)
                     startActivity(checkinItemIntent)
+                    finish()
                 }
             }
         }
@@ -201,7 +203,6 @@ class ToolshedCheckinOverrideUserActivity : ComponentActivity() {
                 Button(onClick = {
                     checkinItemIntent.putExtra("overrideJustification", overrideJustification)
                     scannerLauncher.launch(ScanOptions())
-                    finish()
                 }) {
                     Text("Scan User Badge and Continue")
                 }

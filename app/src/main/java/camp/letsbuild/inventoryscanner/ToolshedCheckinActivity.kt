@@ -53,47 +53,27 @@ class ToolshedCheckinActivity : ComponentActivity() {
                     val intent = Intent(this, ToolshedCheckinConfirmUserActivity::class.java)
                     val itemId = scannedBarcode.contents
                     val inventoryApi = getInventoryApiInstance(this@ToolshedCheckinActivity)
-                    inventoryApi.getItemsInContainer(itemId).enqueue(object : Callback<List<Item>> {
-                        override fun onResponse(call: Call<List<Item>>, response: Response<List<Item>>) {
-                            if (response.isSuccessful && response.body() != null) {
-                                val itemContents = response.body()!!
-                                Log.d(TAG, itemContents.toString())
-                                intent.putExtra("itemContents", itemContents.toTypedArray())
-                                inventoryApi.getItem(itemId).enqueue(object : Callback<Item> {
-                                    override fun onResponse(call: Call<Item>, response: Response<Item>) {
-                                        if (response.isSuccessful && response.body() != null) {
-                                            val item = response.body()!!
-                                            intent.putExtra("item", item)
-                                            inventoryApi.getLastOutstandingCheckout(itemId).enqueue(object : Callback<ToolshedCheckout> {
-                                                override fun onResponse(call: Call<ToolshedCheckout>, response: Response<ToolshedCheckout>) {
-                                                    if (response.isSuccessful) {
-                                                        val toolshedCheckout = response.body()
-                                                        intent.putExtra("toolshedCheckout", toolshedCheckout)
-                                                        startActivity(intent)
-                                                    }
-                                                }
-
-                                                override fun onFailure(call: Call<ToolshedCheckout>, t: Throwable) {
-                                                    TODO("Not yet implemented")
-                                                }
-                                            })
-                                        } else {
-                                            Log.e(TAG, response.toString())
-                                            TODO("Not yet implemented")
-                                        }
-                                    }
-
-                                    override fun onFailure(call: Call<Item>, t: Throwable) {
-                                        TODO("Not yet implemented")
-                                    }
-                                })
-                            }
-                        }
-
-                        override fun onFailure(call: Call<List<Item>>, t: Throwable) {
+                    ChainedNetworkRequest.begin(inventoryApi.getItemsInContainer(itemId))
+                        .then { itemContents ->
+                            Log.d(TAG, "itemContents = $itemContents")
+                            intent.putExtra("itemContents", itemContents.toTypedArray())
+                            inventoryApi.getItem(itemId)
+                        }.then { item ->
+                            Log.d(TAG, "item = $item")
+                            intent.putExtra("item", item)
+                            inventoryApi.getLastOutstandingCheckout(itemId)
+                        }.finally { toolshedCheckout: ToolshedCheckout ->
+                            Log.d(TAG, "toolshedCheckout = $toolshedCheckout")
+                            intent.putExtra("toolshedCheckout", toolshedCheckout)
+                            startActivity(intent)
+                        }.handleNetworkErrorsWith {_, t ->
+                            Log.e(TAG, t.toString())
                             TODO("Not yet implemented")
-                        }
-                    })
+                        }.handleServerErrorsWith {_, response ->
+                            Log.e(TAG, response.toString())
+                            TODO("Not yet implemented")
+                        }.withNumberOfRetries(5)
+                        .execute()
                 }
             }
         }

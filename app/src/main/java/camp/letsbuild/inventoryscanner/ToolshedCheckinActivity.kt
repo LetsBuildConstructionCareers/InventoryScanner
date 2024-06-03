@@ -260,10 +260,8 @@ class ToolshedCheckinItemActivity : ComponentActivity() {
 fun finishCheckinToToolshed(checkoutId: String?, itemId: String, userId: String, overrideJustification: String?, componentActivity: ComponentActivity) {
     getInventoryApiInstance(componentActivity).checkinToToolshed(ToolshedCheckin(null, checkoutId, itemId, userId, System.currentTimeMillis() / 1000, overrideJustification, null))
         .enqueue(object : Callback<ResponseBody> {
-            override fun onResponse(
-                call: Call<ResponseBody>,
-                response: Response<ResponseBody>
-            ) {
+            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                launchViewFullLocationOfItemActivity(itemId, componentActivity)
                 componentActivity.finish()
             }
 

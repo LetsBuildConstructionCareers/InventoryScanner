@@ -49,6 +49,13 @@ data class Item(
 ) : java.io.Serializable
 
 @Serializable
+data class FullLocation(
+    val container_path: List<String>,
+    val vehicle: String?,
+    val location: String?,
+) : java.io.Serializable
+
+@Serializable
 data class User(
     val barcode_id: String,
     val name: String,
@@ -89,6 +96,9 @@ interface InventoryApi {
     fun uploadItem(@Path("barcode_id") barcodeId: String,
                    @Part("name") name: RequestBody,
                    @Part file: MultipartBody.Part): Call<ResponseBody>
+
+    @GET("/inventory/api/v1.0/full-location/{item_id}")
+    fun getFullLocationOfItem(@Path("item_id") itemId: String): Call<FullLocation>
 
     @GET("/inventory/api/v1.0/item-parent/{barcode_id}")
     fun getParentOfItem(@Path("barcode_id") barcodeId: String): Call<String>

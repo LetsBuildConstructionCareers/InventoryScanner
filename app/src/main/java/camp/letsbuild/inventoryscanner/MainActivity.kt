@@ -35,6 +35,7 @@ class MainActivity : ComponentActivity() {
         val scannerForRemoveItemFromVehicleActivity = scannerForNewActivity(this, RemoveItemFromVehicleActivity::class.java)
         val scannerForViewItemsInLocationActivity = scannerForNewActivity(this, ViewItemsInLocationActivity::class.java)
         val scannerForRemoveItemFromLocationActivity = scannerForNewActivity(this, RemoveItemFromLocationActivity::class.java)
+        val scannerForViewFullLocationOfItemActivity = scannerForViewFullLocationOfItem(this)
         val scannerForCheckinUserActivity = scannerForNewActivity(this, CheckinUserActivity::class.java)
         val scannerForCheckoutUserActivity = scannerForNewActivity(this, CheckoutUserActivity::class.java)
         val scannerForCreateUserWithoutPictureActivity = scannerForNewActivity(this, CreateUserWithoutPictureActivity::class.java)
@@ -50,6 +51,7 @@ class MainActivity : ComponentActivity() {
                     scannerForRemoveItemFromVehicleActivity,
                     scannerForViewItemsInLocationActivity,
                     scannerForRemoveItemFromLocationActivity,
+                    scannerForViewFullLocationOfItemActivity,
                     scannerForCheckinUserActivity,
                     scannerForCheckoutUserActivity,
                     scannerForCreateUserWithoutPictureActivity)
@@ -70,10 +72,22 @@ fun scannerForNewActivity(componentActivity: ComponentActivity, intent: Intent, 
     return componentActivity.registerForActivityResult(ScanContract()) { scannedBarcode: ScanIntentResult ->
         run {
             if (scannedBarcode.contents == null) {
-                Toast.makeText(componentActivity, "Cancelled", Toast.LENGTH_LONG).show();
+                Toast.makeText(componentActivity, "Cancelled", Toast.LENGTH_LONG).show()
             } else {
                 intent.putExtra(barcodeId, scannedBarcode.contents)
                 componentActivity.startActivity(intent)
+            }
+        }
+    }
+}
+
+fun scannerForViewFullLocationOfItem(componentActivity: ComponentActivity): ActivityResultLauncher<ScanOptions> {
+    return componentActivity.registerForActivityResult(ScanContract()) {scannedBarcode: ScanIntentResult ->
+        run {
+            if (scannedBarcode.contents == null) {
+                Toast.makeText(componentActivity, "Cancelled", Toast.LENGTH_LONG).show()
+            } else {
+                launchViewFullLocationOfItemActivity(scannedBarcode.contents, componentActivity)
             }
         }
     }
@@ -93,6 +107,7 @@ fun ScanUi(componentActivity: ComponentActivity,
            scannerForRemoveItemFromVehicleActivity: ActivityResultLauncher<ScanOptions>,
            scannerForViewItemsInLocationActivity: ActivityResultLauncher<ScanOptions>,
            scannerForRemoveItemFromLocationActivity: ActivityResultLauncher<ScanOptions>,
+           scannerForViewFullLocationOfItemActivity: ActivityResultLauncher<ScanOptions>,
            scannerForCheckinUserActivity: ActivityResultLauncher<ScanOptions>,
            scannerForCheckoutUserActivity: ActivityResultLauncher<ScanOptions>,
            scannerForCreateUserWithoutPictureActivity: ActivityResultLauncher<ScanOptions>,
@@ -143,6 +158,9 @@ fun ScanUi(componentActivity: ComponentActivity,
         }
         Button(onClick = { scannerForViewItemsInLocationActivity.launch(ScanOptions()) }) {
             Text("View Items in Location")
+        }
+        Button(onClick = { scannerForViewFullLocationOfItemActivity.launch(ScanOptions()) }) {
+            Text("View Full Location")
         }
         Button(onClick = {
             val intent = Intent(componentActivity, ToolshedCheckoutActivity::class.java)

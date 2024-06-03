@@ -31,7 +31,8 @@ class MainActivity : ComponentActivity() {
         val scannerForDisplayItemActivity = scannerForDisplayItemResultLauncher(this)
         val scannerForViewItemsInContainerActivity = scannerForNewActivity(this, ViewItemsInContainerActivity::class.java)
         val scannerForRemoveItemFromContainerActivity = scannerForNewActivity(this, RemoveItemFromContainerActivity::class.java)
-        //val scannerForInitialBadgeCheckInActivity = scannerForNewActivity(this, InitialBadgeCheckInActivity::class.java)
+        val scannerForViewItemsInVehicleActivity = scannerForNewActivity(this, ViewItemsInVehicleActivity::class.java)
+        val scannerForRemoveItemFromVehicleActivity = scannerForNewActivity(this, RemoveItemFromVehicleActivity::class.java)
         val scannerForCheckinUserActivity = scannerForNewActivity(this, CheckinUserActivity::class.java)
         val scannerForCheckoutUserActivity = scannerForNewActivity(this, CheckoutUserActivity::class.java)
         val scannerForCreateUserWithoutPictureActivity = scannerForNewActivity(this, CreateUserWithoutPictureActivity::class.java)
@@ -43,6 +44,8 @@ class MainActivity : ComponentActivity() {
                     scannerForDisplayItemActivity,
                     scannerForViewItemsInContainerActivity,
                     scannerForRemoveItemFromContainerActivity,
+                    scannerForViewItemsInVehicleActivity,
+                    scannerForRemoveItemFromVehicleActivity,
                     scannerForCheckinUserActivity,
                     scannerForCheckoutUserActivity,
                     scannerForCreateUserWithoutPictureActivity)
@@ -82,6 +85,8 @@ fun ScanUi(componentActivity: ComponentActivity,
            scannerForDisplayItem: ActivityResultLauncher<ScanOptions>,
            scannerForViewItemsInContainerActivity: ActivityResultLauncher<ScanOptions>,
            scannerForRemoveItemFromContainerActivity: ActivityResultLauncher<ScanOptions>,
+           scannerForViewItemsInVehicleActivity: ActivityResultLauncher<ScanOptions>,
+           scannerForRemoveItemFromVehicleActivity: ActivityResultLauncher<ScanOptions>,
            scannerForCheckinUserActivity: ActivityResultLauncher<ScanOptions>,
            scannerForCheckoutUserActivity: ActivityResultLauncher<ScanOptions>,
            scannerForCreateUserWithoutPictureActivity: ActivityResultLauncher<ScanOptions>,
@@ -109,11 +114,17 @@ fun ScanUi(componentActivity: ComponentActivity,
         Button(onClick = { scannerForViewItemsInContainerActivity.launch(ScanOptions()) }) {
             Text("View Items in Container")
         }
-        Button(onClick = { /*TODO*/ }) {
+        Button(onClick = {
+            val intent = Intent(componentActivity, AddItemsToVehicleLandingActivity::class.java)
+            componentActivity.startActivity(intent)
+        }) {
             Text("Add Item or Container to Vehicle")
         }
-        Button(onClick = { /*TODO*/ }) {
+        Button(onClick = { scannerForRemoveItemFromVehicleActivity.launch(ScanOptions()) }) {
             Text("Remove Item or Container from Vehicle")
+        }
+        Button(onClick = { scannerForViewItemsInVehicleActivity.launch(ScanOptions()) }) {
+            Text("View Items in Vehicle")
         }
         Button(onClick = { /*TODO*/ }) {
             Text("Add Item or Container to Location")

@@ -138,7 +138,8 @@ class AddSingleItemToContainerActivity : ComponentActivity() {
             return
         }
         setContent {
-            AddSingleItemToContainerUI(itemId, containerId, this)
+            AddSingleItemToContainerUI(itemId, containerId, this,
+                {inventoryApi, containerId, itemIds -> inventoryApi.addItemsToContainer(containerId, itemIds)})
         }
     }
 }
@@ -146,6 +147,7 @@ class AddSingleItemToContainerActivity : ComponentActivity() {
 @Composable
 fun AddSingleItemToContainerUI(itemId: String, containerId: String,
                                componentActivity: ComponentActivity,
+                               addItems: (inventoryApi: InventoryApi, containerId: String, itemIds: List<String>) -> Call<ResponseBody>,
                                modifier: Modifier = Modifier
                                    .fillMaxSize()
                                    .wrapContentSize(Alignment.Center)) {
@@ -168,8 +170,7 @@ fun AddSingleItemToContainerUI(itemId: String, containerId: String,
         } else {
             Button(onClick = {
                 waitingOnNetwork = true
-                val inventoryApi = getInventoryApiInstance(componentActivity)
-                inventoryApi.addItemsToContainer(containerId, listOf(itemId)).enqueue(object : Callback<ResponseBody> {
+                addItems(getInventoryApiInstance(componentActivity), containerId, listOf(itemId)).enqueue(object : Callback<ResponseBody> {
                     override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                         Toast.makeText(componentActivity, response.message(), Toast.LENGTH_LONG)
                             .show()

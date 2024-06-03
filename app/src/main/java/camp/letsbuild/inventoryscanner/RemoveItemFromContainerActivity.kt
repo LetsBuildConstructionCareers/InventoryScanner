@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,37 +50,46 @@ class RemoveItemFromContainerActivity : ComponentActivity() {
             }
         })
         setContent {
-            Column(modifier = Modifier
-                .fillMaxSize()
-                .wrapContentSize(Alignment.Center),
-                   horizontalAlignment = Alignment.CenterHorizontally) {
-                SubcomposeAsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(getItemPictureUrl(itemId))
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "",
-                    loading = { CircularProgressIndicator() }
-                )
-                var waitingOnNetwork by remember { mutableStateOf(false) }
-                if (waitingOnNetwork) {
-                    CircularProgressIndicator()
-                } else {
-                    Button(onClick = {
-                        waitingOnNetwork = true
-                        inventoryApi.removeItemFromContainer(containerId, itemId).enqueue(object : Callback<ResponseBody> {
-                            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                                this@RemoveItemFromContainerActivity.finish()
-                            }
+            RemoveItemFromContainerUI(itemId, containerId, this) { inventoryApi, containerId, itemId ->
+                inventoryApi.removeItemFromContainer(containerId, itemId)
+            }
+        }
+    }
+}
 
-                            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                                TODO("Not yet implemented")
-                            }
-                        })
-                    }) {
-                        Text("Confirm Remove Item")
+@Composable
+fun RemoveItemFromContainerUI(itemId: String, containerId: String, componentActivity: ComponentActivity, removeItem: (inventoryApi: InventoryApi, containerId: String, itemId: String) -> Call<ResponseBody>) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .wrapContentSize(Alignment.Center),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        SubcomposeAsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(getItemPictureUrl(itemId))
+                .crossfade(true)
+                .build(),
+            contentDescription = "",
+            loading = { CircularProgressIndicator() }
+        )
+        var waitingOnNetwork by remember { mutableStateOf(false) }
+        if (waitingOnNetwork) {
+            CircularProgressIndicator()
+        } else {
+            Button(onClick = {
+                waitingOnNetwork = true
+                removeItem(getInventoryApiInstance(componentActivity), containerId, itemId).enqueue(object : Callback<ResponseBody> {
+                    override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                        componentActivity.finish()
                     }
-                }
+
+                    override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                        TODO("Not yet implemented")
+                    }
+                })
+            }) {
+                Text("Confirm Remove Item")
             }
         }
     }

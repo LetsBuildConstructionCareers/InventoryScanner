@@ -98,6 +98,56 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".AddItemsToVehicleLandingActivity"
+            android:exported="true"
+            android:label="InventoryScanner"
+            android:theme="@style/Theme.InventoryScanner">
+            <intent-filter>
+                <action android:name="android.intent.action.RUN"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".AddItemsToVehicleActivity"
+            android:exported="true"
+            android:label="InventoryScanner"
+            android:theme="@style/Theme.InventoryScanner">
+            <intent-filter>
+                <action android:name="android.intent.action.RUN"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".AddSingleItemToVehicleActivity"
+            android:exported="true"
+            android:label="InventoryScanner"
+            android:theme="@style/Theme.InventoryScanner">
+            <intent-filter>
+                <action android:name="android.intent.action.RUN"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ViewItemsInVehicleActivity"
+            android:exported="true"
+            android:label="InventoryScanner"
+            android:theme="@style/Theme.InventoryScanner">
+            <intent-filter>
+                <action android:name="android.intent.action.RUN"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".RemoveItemFromVehicleActivity"
+            android:exported="true"
+            android:label="InventoryScanner"
+            android:theme="@style/Theme.InventoryScanner">
+            <intent-filter>
+                <action android:name="android.intent.action.RUN"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".ToolshedCheckoutActivity"
             android:exported="true"
             android:label="InventoryScanner"

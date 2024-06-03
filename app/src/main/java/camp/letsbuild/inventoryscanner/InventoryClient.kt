@@ -102,6 +102,24 @@ interface InventoryApi {
     @DELETE("/inventory/api/v1.0/containers/{container_id}/{item_id}")
     fun removeItemFromContainer(@Path("container_id") containerId: String, @Path("item_id") itemId: String): Call<ResponseBody>
 
+    @GET("/inventory/api/v1.0/vehicles/{container_id}")
+    fun getItemsInVehicle(@Path("container_id") containerId: String): Call<List<Item>>
+
+    @POST("/inventory/api/v1.0/vehicles/{container_id}")
+    fun addItemsToVehicle(@Path("container_id") containerId: String, @Body itemIds: List<String>): Call<ResponseBody>
+
+    @DELETE("/inventory/api/v1.0/vehicles/{container_id}/{item_id}")
+    fun removeItemFromVehicle(@Path("container_id") containerId: String, @Path("item_id") itemId: String): Call<ResponseBody>
+
+    @GET("/inventory/api/v1.0/locations/{container_id}")
+    fun getItemsInLocation(@Path("container_id") containerId: String): Call<List<Item>>
+
+    @POST("/inventory/api/v1.0/locations/{container_id}")
+    fun addItemsToLocation(@Path("container_id") containerId: String, @Body itemIds: List<String>): Call<ResponseBody>
+
+    @DELETE("/inventory/api/v1.0/locations/{container_id}/{item_id}")
+    fun removeItemFromLocation(@Path("container_id") containerId: String, @Path("item_id") itemId: String): Call<ResponseBody>
+
     @GET("/inventory/api/v1.0/items")
     fun getItems(): Call<List<Item>>
 

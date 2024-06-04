@@ -56,7 +56,7 @@ fun UserManagerUI(scannerForCheckinUserActivity: ActivityResultLauncher<ScanOpti
         .fillMaxSize()
         .wrapContentSize(Alignment.Center)) {
     Scaffold(topBar = {
-        TopAppBar(title = { Text("User Manager") })
+        TopAppBar(title = { Text(componentActivity.getString(R.string.app_name)) })
     }) { padding ->
         Column(
             modifier = modifier

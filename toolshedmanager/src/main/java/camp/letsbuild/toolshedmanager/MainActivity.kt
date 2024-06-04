@@ -48,7 +48,7 @@ fun ToolshedManagerUI(componentActivity: ComponentActivity, modifier: Modifier =
     .fillMaxSize()
     .wrapContentSize(Alignment.Center)) {
     Scaffold(topBar = {
-        TopAppBar(title = { Text("Toolshed Manager") })
+        TopAppBar(title = { Text(componentActivity.getString(R.string.app_name)) })
     }) { padding ->
         Column(
             modifier = modifier.verticalScroll(rememberScrollState()).padding(padding),

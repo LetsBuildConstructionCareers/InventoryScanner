@@ -37,6 +37,7 @@ import camp.letsbuild.inventoryscanner.ViewItemsInVehicleActivity
 import camp.letsbuild.inventoryscanner.launchDisplayUsersWithOutstandingToolshedCheckoutsActivity
 import camp.letsbuild.inventoryscanner.launchViewFullLocationOfItemActivity
 import camp.letsbuild.inventoryscanner.scannerForNewActivity
+import camp.letsbuild.inventoryscanner.scannerForViewFullLocationOfItem
 import camp.letsbuild.inventoryscanner.ui.theme.InventoryScannerTheme
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanIntentResult
@@ -87,18 +88,6 @@ fun scannerForNewItemResultLauncher(componentActivity: ComponentActivity): Activ
 
 fun scannerForDisplayItemResultLauncher(componentActivity: ComponentActivity): ActivityResultLauncher<ScanOptions> {
     return scannerForNewActivity(componentActivity, DisplayItemActivity::class.java)
-}
-
-fun scannerForViewFullLocationOfItem(componentActivity: ComponentActivity): ActivityResultLauncher<ScanOptions> {
-    return componentActivity.registerForActivityResult(ScanContract()) {scannedBarcode: ScanIntentResult ->
-        run {
-            if (scannedBarcode.contents == null) {
-                Toast.makeText(componentActivity, "Cancelled", Toast.LENGTH_LONG).show()
-            } else {
-                launchViewFullLocationOfItemActivity(scannedBarcode.contents, componentActivity)
-            }
-        }
-    }
 }
 
 @Composable

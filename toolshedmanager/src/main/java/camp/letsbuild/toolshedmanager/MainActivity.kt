@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -20,13 +21,17 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import camp.letsbuild.inventoryscanner.DisplayItemsCheckedOutByUserActivity
 import camp.letsbuild.inventoryscanner.ToolshedCheckinActivity
 import camp.letsbuild.inventoryscanner.ToolshedCheckoutActivity
+import camp.letsbuild.inventoryscanner.launchDisplayUsersWithOutstandingToolshedCheckoutsActivity
+import camp.letsbuild.inventoryscanner.scannerForViewFullLocationOfItem
 import camp.letsbuild.toolshedmanager.ui.theme.InventoryScannerTheme
+import com.journeyapps.barcodescanner.ScanOptions
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        val scannerForViewFullLocationOfItemActivity = scannerForViewFullLocationOfItem(this)
         super.onCreate(savedInstanceState)
         setContent {
             InventoryScannerTheme {
@@ -35,7 +40,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ToolshedManagerUI(this)
+                    ToolshedManagerUI(scannerForViewFullLocationOfItemActivity, this)
                 }
             }
         }
@@ -44,7 +49,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ToolshedManagerUI(componentActivity: ComponentActivity, modifier: Modifier = Modifier
+fun ToolshedManagerUI(scannerForViewFullLocationOfItemActivity: ActivityResultLauncher<ScanOptions>, componentActivity: ComponentActivity, modifier: Modifier = Modifier
     .fillMaxSize()
     .wrapContentSize(Alignment.Center)) {
     Scaffold(topBar = {
@@ -65,6 +70,18 @@ fun ToolshedManagerUI(componentActivity: ComponentActivity, modifier: Modifier =
                 componentActivity.startActivity(intent)
             }) {
                 Text("Tool Shed - Check-In")
+            }
+            Button(onClick = { launchDisplayUsersWithOutstandingToolshedCheckoutsActivity(componentActivity) }) {
+                Text("Display Users with Outstanding Toolshed Checkouts")
+            }
+            Button(onClick = {
+                val intent = Intent(componentActivity, DisplayItemsCheckedOutByUserActivity::class.java)
+                componentActivity.startActivity(intent)
+            }) {
+                Text("Display Items Checked-Out by User")
+            }
+            Button(onClick = { scannerForViewFullLocationOfItemActivity.launch(ScanOptions()) }) {
+                Text("View Full Location")
             }
         }
     }

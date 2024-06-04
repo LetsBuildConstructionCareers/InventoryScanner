@@ -7,13 +7,17 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,27 +48,35 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserManagerUI(scannerForCheckinUserActivity: ActivityResultLauncher<ScanOptions>,
                   scannerForCheckoutUserActivity: ActivityResultLauncher<ScanOptions>,
                   componentActivity: ComponentActivity, modifier: Modifier = Modifier
-    .fillMaxSize()
-    .wrapContentSize(Alignment.Center)) {
-    Column(
-        modifier = modifier.verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Button(onClick = {
-            val intent = Intent(componentActivity, InitialBadgeCheckInLandingActivity::class.java)
-            componentActivity.startActivity(intent)
-        }) {
-            Text("Initial Badge Check-In")
-        }
-        Button(onClick = { scannerForCheckinUserActivity.launch(ScanOptions()) }) {
-            Text("Badge Check-In")
-        }
-        Button(onClick = { scannerForCheckoutUserActivity.launch(ScanOptions()) }) {
-            Text("Badge Check-Out")
+        .fillMaxSize()
+        .wrapContentSize(Alignment.Center)) {
+    Scaffold(topBar = {
+        TopAppBar(title = { Text("User Manager") })
+    }) { padding ->
+        Column(
+            modifier = modifier
+                .verticalScroll(rememberScrollState())
+                .padding(padding),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Button(onClick = {
+                val intent =
+                    Intent(componentActivity, InitialBadgeCheckInLandingActivity::class.java)
+                componentActivity.startActivity(intent)
+            }) {
+                Text("Initial Badge Check-In")
+            }
+            Button(onClick = { scannerForCheckinUserActivity.launch(ScanOptions()) }) {
+                Text("Badge Check-In")
+            }
+            Button(onClick = { scannerForCheckoutUserActivity.launch(ScanOptions()) }) {
+                Text("Badge Check-Out")
+            }
         }
     }
 }

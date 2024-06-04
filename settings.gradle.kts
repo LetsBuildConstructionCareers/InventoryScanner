@@ -21,3 +21,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "InventoryScanner"
 include(":app")
+include(":toolshedmanager")
+include(":campadmin")

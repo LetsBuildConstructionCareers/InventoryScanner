@@ -1,4 +1,4 @@
-package camp.letsbuild.inventoryscanner
+package camp.letsbuild.campadmin
 
 import android.content.Intent
 import android.os.Bundle
@@ -16,6 +16,27 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import camp.letsbuild.inventoryscanner.AddItemsToContainerLandingActivity
+import camp.letsbuild.inventoryscanner.AddItemsToLocationLandingActivity
+import camp.letsbuild.inventoryscanner.AddItemsToVehicleLandingActivity
+import camp.letsbuild.inventoryscanner.CheckinUserActivity
+import camp.letsbuild.inventoryscanner.CheckoutUserActivity
+import camp.letsbuild.inventoryscanner.CreateUserWithoutPictureActivity
+import camp.letsbuild.inventoryscanner.DisplayItemActivity
+import camp.letsbuild.inventoryscanner.DisplayItemsCheckedOutByUserActivity
+import camp.letsbuild.inventoryscanner.InitialBadgeCheckInLandingActivity
+import camp.letsbuild.inventoryscanner.NewItemActivity
+import camp.letsbuild.inventoryscanner.RemoveItemFromContainerActivity
+import camp.letsbuild.inventoryscanner.RemoveItemFromLocationActivity
+import camp.letsbuild.inventoryscanner.RemoveItemFromVehicleActivity
+import camp.letsbuild.inventoryscanner.ToolshedCheckinActivity
+import camp.letsbuild.inventoryscanner.ToolshedCheckoutActivity
+import camp.letsbuild.inventoryscanner.ViewItemsInContainerActivity
+import camp.letsbuild.inventoryscanner.ViewItemsInLocationActivity
+import camp.letsbuild.inventoryscanner.ViewItemsInVehicleActivity
+import camp.letsbuild.inventoryscanner.launchDisplayUsersWithOutstandingToolshedCheckoutsActivity
+import camp.letsbuild.inventoryscanner.launchViewFullLocationOfItemActivity
+import camp.letsbuild.inventoryscanner.scannerForNewActivity
 import camp.letsbuild.inventoryscanner.ui.theme.InventoryScannerTheme
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanIntentResult
@@ -68,19 +89,6 @@ fun scannerForDisplayItemResultLauncher(componentActivity: ComponentActivity): A
     return scannerForNewActivity(componentActivity, DisplayItemActivity::class.java)
 }
 
-fun scannerForNewActivity(componentActivity: ComponentActivity, intent: Intent, barcodeId: String): ActivityResultLauncher<ScanOptions> {
-    return componentActivity.registerForActivityResult(ScanContract()) { scannedBarcode: ScanIntentResult ->
-        run {
-            if (scannedBarcode.contents == null) {
-                Toast.makeText(componentActivity, "Cancelled", Toast.LENGTH_LONG).show()
-            } else {
-                intent.putExtra(barcodeId, scannedBarcode.contents)
-                componentActivity.startActivity(intent)
-            }
-        }
-    }
-}
-
 fun scannerForViewFullLocationOfItem(componentActivity: ComponentActivity): ActivityResultLauncher<ScanOptions> {
     return componentActivity.registerForActivityResult(ScanContract()) {scannedBarcode: ScanIntentResult ->
         run {
@@ -91,10 +99,6 @@ fun scannerForViewFullLocationOfItem(componentActivity: ComponentActivity): Acti
             }
         }
     }
-}
-
-fun <T : ComponentActivity> scannerForNewActivity(componentActivity: ComponentActivity, activityClass: Class<T>): ActivityResultLauncher<ScanOptions> {
-    return scannerForNewActivity(componentActivity, Intent(componentActivity, activityClass), "barcode_id")
 }
 
 @Composable

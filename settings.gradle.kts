@@ -23,3 +23,4 @@ rootProject.name = "InventoryScanner"
 include(":lib")
 include(":toolshedmanager")
 include(":campadmin")
+include(":usermanager")

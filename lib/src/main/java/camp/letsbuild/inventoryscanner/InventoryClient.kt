@@ -12,6 +12,7 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okhttp3.ResponseBody
+import org.apache.hc.core5.http.impl.EnglishReasonPhraseCatalog
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -24,6 +25,7 @@ import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
 import java.io.File
+import java.util.Locale
 
 private const val TAG = "InventoryClient"
 
@@ -33,6 +35,10 @@ const val AUTHORIZATION = "Authorization"
 
 fun getAuthorization(context: Context): String {
     return context.getString(R.string.authorization)
+}
+
+fun getStatusText(status: Int): String {
+    return EnglishReasonPhraseCatalog.INSTANCE.getReason(status, Locale.US)
 }
 
 class ServiceInterceptor(private val context: Context) : Interceptor {

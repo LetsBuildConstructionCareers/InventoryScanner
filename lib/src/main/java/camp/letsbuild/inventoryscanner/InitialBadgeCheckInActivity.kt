@@ -190,8 +190,9 @@ fun InitialBadgeCheckInUI(componentActivity: ComponentActivity,
                         checkinCall.enqueue(object : Callback<ResponseBody> {
                             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                                 waitingOnNetwork = false
-                                Log.i(TAG, response.message())
-                                Toast.makeText(componentActivity, response.message(), Toast.LENGTH_LONG).show();
+                                val message = getStatusText(response.code())
+                                Log.i(TAG, message)
+                                Toast.makeText(componentActivity, message, Toast.LENGTH_LONG).show();
                                 componentActivity.finish()
                             }
 

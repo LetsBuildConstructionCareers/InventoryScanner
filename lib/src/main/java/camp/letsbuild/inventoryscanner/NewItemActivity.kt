@@ -31,6 +31,7 @@ import androidx.core.content.FileProvider
 import camp.letsbuild.inventoryscanner.ui.theme.InventoryScannerTheme
 import com.journeyapps.barcodescanner.ScanOptions
 import okhttp3.ResponseBody
+import org.apache.hc.core5.http.HttpStatus
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -115,8 +116,9 @@ fun NewItemUI(componentActivity: ComponentActivity,
                     uploadItemToInventory(inventoryApi, barcodeId, nameInput, imageFile).enqueue(
                         object : Callback<ResponseBody> {
                             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                                Log.i(TAG, response.message())
-                                Toast.makeText(componentActivity, response.message(), Toast.LENGTH_LONG).show();
+                                val message = getStatusText(response.code())
+                                Log.i(TAG, message)
+                                Toast.makeText(componentActivity, message, Toast.LENGTH_LONG).show();
                                 componentActivity.finish()
                             }
 

@@ -5,6 +5,15 @@
       <entry key="app">
         <State />
       </entry>
+      <entry key="campadmin">
+        <State />
+      </entry>
+      <entry key="toolshedmanager">
+        <State />
+      </entry>
+      <entry key="usermanager">
+        <State />
+      </entry>
     </value>
   </component>
 </project>

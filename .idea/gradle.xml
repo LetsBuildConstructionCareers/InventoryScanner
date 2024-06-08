@@ -9,7 +9,10 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/campadmin" />
+            <option value="$PROJECT_DIR$/lib" />
+            <option value="$PROJECT_DIR$/toolshedmanager" />
+            <option value="$PROJECT_DIR$/usermanager" />
           </set>
         </option>
         <option name="resolveExternalAnnotations" value="false" />

@@ -2,7 +2,6 @@ package camp.letsbuild.campadmin
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
@@ -25,6 +24,7 @@ import camp.letsbuild.inventoryscanner.CreateUserWithoutPictureActivity
 import camp.letsbuild.inventoryscanner.DisplayItemActivity
 import camp.letsbuild.inventoryscanner.DisplayItemsCheckedOutByUserActivity
 import camp.letsbuild.inventoryscanner.InitialBadgeCheckInLandingActivity
+import camp.letsbuild.inventoryscanner.InventoryApi
 import camp.letsbuild.inventoryscanner.NewItemActivity
 import camp.letsbuild.inventoryscanner.RemoveItemFromContainerActivity
 import camp.letsbuild.inventoryscanner.RemoveItemFromLocationActivity
@@ -37,12 +37,10 @@ import camp.letsbuild.inventoryscanner.ViewItemsInVehicleActivity
 import camp.letsbuild.inventoryscanner.launchDisplayUsersWithOutstandingToolshedCheckoutsActivity
 import camp.letsbuild.inventoryscanner.launchRegisterOtherDeviceActivity
 import camp.letsbuild.inventoryscanner.launchRetrieveOrRegisterDeviceIdActivity
-import camp.letsbuild.inventoryscanner.launchViewFullLocationOfItemActivity
 import camp.letsbuild.inventoryscanner.scannerForNewActivity
+import camp.letsbuild.inventoryscanner.scannerForRemoveItemFromX
 import camp.letsbuild.inventoryscanner.scannerForViewFullLocationOfItem
 import camp.letsbuild.inventoryscanner.ui.theme.InventoryScannerTheme
-import com.journeyapps.barcodescanner.ScanContract
-import com.journeyapps.barcodescanner.ScanIntentResult
 import com.journeyapps.barcodescanner.ScanOptions
 
 private const val TAG = "MainActivity"
@@ -54,11 +52,17 @@ class MainActivity : ComponentActivity() {
         val scannerForNewItemActivity = scannerForNewItemResultLauncher(this)
         val scannerForDisplayItemActivity = scannerForDisplayItemResultLauncher(this)
         val scannerForViewItemsInContainerActivity = scannerForNewActivity(this, ViewItemsInContainerActivity::class.java)
-        val scannerForRemoveItemFromContainerActivity = scannerForNewActivity(this, RemoveItemFromContainerActivity::class.java)
+        val scannerForRemoveItemFromContainerActivity = scannerForRemoveItemFromX(this, RemoveItemFromContainerActivity::class.java, { inventoryApi, itemId ->
+            inventoryApi.getParentOfItem(itemId)
+        }, {result -> result})
         val scannerForViewItemsInVehicleActivity = scannerForNewActivity(this, ViewItemsInVehicleActivity::class.java)
-        val scannerForRemoveItemFromVehicleActivity = scannerForNewActivity(this, RemoveItemFromVehicleActivity::class.java)
+        val scannerForRemoveItemFromVehicleActivity = scannerForRemoveItemFromX(this, RemoveItemFromVehicleActivity::class.java, { inventoryApi, itemId ->
+            inventoryApi.getFullLocationOfItem(itemId)},
+            { result -> result.vehicle!! })
         val scannerForViewItemsInLocationActivity = scannerForNewActivity(this, ViewItemsInLocationActivity::class.java)
-        val scannerForRemoveItemFromLocationActivity = scannerForNewActivity(this, RemoveItemFromLocationActivity::class.java)
+        val scannerForRemoveItemFromLocationActivity = scannerForRemoveItemFromX(this, RemoveItemFromLocationActivity::class.java, { inventoryApi, itemId ->
+            inventoryApi.getFullLocationOfItem(itemId) },
+            { result -> result.location!! })
         val scannerForViewFullLocationOfItemActivity = scannerForViewFullLocationOfItem(this)
         val scannerForCheckinUserActivity = scannerForNewActivity(this, CheckinUserActivity::class.java)
         val scannerForCheckoutUserActivity = scannerForNewActivity(this, CheckoutUserActivity::class.java)

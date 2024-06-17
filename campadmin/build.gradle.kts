@@ -69,4 +69,5 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.zxing.android.embedded)
+    implementation(libs.retrofit)
 }

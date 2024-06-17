@@ -22,6 +22,7 @@ import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
 import java.io.File
@@ -91,6 +92,18 @@ data class ToolshedCheckin(
 )
 
 interface InventoryApi {
+    @GET("/inventory/api/v1.0/registered-devices/{android_id}")
+    fun getRegisteredDeviceId(@Path("android_id") androidId: String): Call<String>
+
+    @GET("/inventory/api/v1.0/unregistered-devices/")
+    fun getUnregisteredDevices(): Call<List<String>>
+
+    @PUT("/inventory/api/v1.0/unregistered-devices/{android_id}")
+    fun uploadDeviceId(@Path("android_id") androidId: String): Call<ResponseBody>
+
+    @POST("/inventory/api/v1.0/registered-devices/{android_id}/{barcode_id}")
+    fun registerDeviceId(@Path("android_id") androidId: String, @Path("barcode_id") barcodeId: String): Call<ResponseBody>
+
     @GET("/inventory/api/v1.0/items/{barcode_id}")
     fun getItem(@Path("barcode_id") barcodeId: String): Call<Item>
 

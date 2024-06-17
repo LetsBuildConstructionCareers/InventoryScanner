@@ -35,6 +35,8 @@ import camp.letsbuild.inventoryscanner.ViewItemsInContainerActivity
 import camp.letsbuild.inventoryscanner.ViewItemsInLocationActivity
 import camp.letsbuild.inventoryscanner.ViewItemsInVehicleActivity
 import camp.letsbuild.inventoryscanner.launchDisplayUsersWithOutstandingToolshedCheckoutsActivity
+import camp.letsbuild.inventoryscanner.launchRegisterOtherDeviceActivity
+import camp.letsbuild.inventoryscanner.launchRetrieveOrRegisterDeviceIdActivity
 import camp.letsbuild.inventoryscanner.launchViewFullLocationOfItemActivity
 import camp.letsbuild.inventoryscanner.scannerForNewActivity
 import camp.letsbuild.inventoryscanner.scannerForViewFullLocationOfItem
@@ -193,6 +195,12 @@ fun ScanUi(componentActivity: ComponentActivity,
         }
         Button(onClick = { scannerForCreateUserWithoutPictureActivity.launch(ScanOptions()) }) {
             Text("Create User without Picture")
+        }
+        Button(onClick = { launchRetrieveOrRegisterDeviceIdActivity(componentActivity) }) {
+            Text("Register This Device")
+        }
+        Button(onClick = { launchRegisterOtherDeviceActivity(componentActivity) }) {
+            Text("Register Another Device")
         }
     }
 }

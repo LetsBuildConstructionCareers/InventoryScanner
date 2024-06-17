@@ -356,6 +356,36 @@
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
+        <activity
+            android:name=".RetrieveOrRegisterDeviceIdActivity"
+            android:exported="true"
+            android:label="InventoryScanner"
+            android:theme="@style/Theme.InventoryScanner">
+            <intent-filter>
+                <action android:name="android.intent.action.RUN"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".RegisterOtherDeviceActivity"
+            android:exported="true"
+            android:label="InventoryScanner"
+            android:theme="@style/Theme.InventoryScanner">
+            <intent-filter>
+                <action android:name="android.intent.action.RUN"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".FinalizeRegisterOtherDeviceActivity"
+            android:exported="true"
+            android:label="InventoryScanner"
+            android:theme="@style/Theme.InventoryScanner">
+            <intent-filter>
+                <action android:name="android.intent.action.RUN"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

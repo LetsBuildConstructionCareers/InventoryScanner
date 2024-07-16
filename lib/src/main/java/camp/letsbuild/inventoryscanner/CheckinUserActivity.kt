@@ -39,6 +39,7 @@ class CheckinUserActivity : ComponentActivity() {
                 SubcomposeAsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(getUserPictureUrl(userId))
+                        .addHeader(AUTHORIZATION, getAuthorization(this@CheckinUserActivity))
                         .crossfade(true)
                         .build(),
                     contentDescription = "",

@@ -36,32 +36,56 @@ class CheckinUserActivity : ComponentActivity() {
                     .wrapContentSize(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                SubcomposeAsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(getUserPictureUrl(userId))
-                        .addHeader(AUTHORIZATION, getAuthorization(this@CheckinUserActivity))
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "",
-                    loading = { CircularProgressIndicator() }
-                )
-                var waitingOnNetwork by remember { mutableStateOf(false) }
-                if (waitingOnNetwork) {
+                var user: User? by remember { mutableStateOf(null) }
+                var checkedUserExists by remember { mutableStateOf(false) }
+                if (!checkedUserExists) {
                     CircularProgressIndicator()
-                } else {
-                    Button(onClick = {
-                        waitingOnNetwork = true
-                        inventoryApi.checkinUser(userId).enqueue(object : Callback<ResponseBody> {
-                            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                                this@CheckinUserActivity.finish()
+                    inventoryApi.getUser(userId).enqueue(object : Callback<User> {
+                        override fun onResponse(call: Call<User>, response: Response<User>) {
+                            checkedUserExists = true
+                            if (response.isSuccessful && response.body() != null) {
+                                user = response.body()
                             }
+                        }
 
-                            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                                TODO("Not yet implemented")
-                            }
-                        })
-                    }) {
-                        Text("Confirm Checkin")
+                        override fun onFailure(call: Call<User>, t: Throwable) {
+                            TODO("Not yet implemented")
+                        }
+                    })
+                } else if (user != null) {
+                    SubcomposeAsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(getUserPictureUrl(userId))
+                            .addHeader(AUTHORIZATION, getAuthorization(this@CheckinUserActivity))
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "",
+                        loading = { CircularProgressIndicator() },
+                        error = { Text("Cannot display picture! Consider updating user's picture.") }
+                    )
+                    Text(user!!.name)
+                    var waitingOnNetwork by remember { mutableStateOf(false) }
+                    if (waitingOnNetwork) {
+                        CircularProgressIndicator()
+                    } else {
+                        Button(onClick = {
+                            waitingOnNetwork = true
+                            inventoryApi.checkinUser(userId)
+                                .enqueue(object : Callback<ResponseBody> {
+                                    override fun onResponse(
+                                        call: Call<ResponseBody>,
+                                        response: Response<ResponseBody>
+                                    ) {
+                                        this@CheckinUserActivity.finish()
+                                    }
+
+                                    override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                                        TODO("Not yet implemented")
+                                    }
+                                })
+                        }) {
+                            Text("Confirm Checkin")
+                        }
                     }
                 }
             }

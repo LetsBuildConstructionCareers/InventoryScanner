@@ -1,5 +1,6 @@
 package camp.letsbuild.inventoryscanner
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -23,6 +24,12 @@ import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+
+fun launchCheckoutUserActivity(barcodeId: String, componentActivity: ComponentActivity) {
+    val intent = Intent(componentActivity, CheckoutUserActivity::class.java)
+    intent.putExtra("barcode_id", barcodeId)
+    componentActivity.startActivity(intent)
+}
 
 class CheckoutUserActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

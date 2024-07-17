@@ -34,6 +34,7 @@ import camp.letsbuild.inventoryscanner.ToolshedCheckoutActivity
 import camp.letsbuild.inventoryscanner.ViewItemsInContainerActivity
 import camp.letsbuild.inventoryscanner.ViewItemsInLocationActivity
 import camp.letsbuild.inventoryscanner.ViewItemsInVehicleActivity
+import camp.letsbuild.inventoryscanner.launchDisplayCheckedInUsersActivity
 import camp.letsbuild.inventoryscanner.launchDisplayUsersWithOutstandingToolshedCheckoutsActivity
 import camp.letsbuild.inventoryscanner.launchRegisterOtherDeviceActivity
 import camp.letsbuild.inventoryscanner.launchRetrieveOrRegisterDeviceIdActivity
@@ -196,6 +197,9 @@ fun ScanUi(componentActivity: ComponentActivity,
         }
         Button(onClick = { scannerForCheckoutUserActivity.launch(ScanOptions()) }) {
             Text("Badge Check-Out")
+        }
+        Button(onClick = { launchDisplayCheckedInUsersActivity(componentActivity) }) {
+            Text("Display Checked In Users")
         }
         Button(onClick = { scannerForCreateUserWithoutPictureActivity.launch(ScanOptions()) }) {
             Text("Create User without Picture")

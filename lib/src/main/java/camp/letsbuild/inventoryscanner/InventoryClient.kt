@@ -185,6 +185,9 @@ interface InventoryApi {
     @POST("/inventory/api/v1.0/user-checkout/{user_id}")
     fun checkoutUser(@Path("user_id") userId: String): Call<ResponseBody>
 
+    @GET("/inventory/api/v1.0/users-checkedin/")
+    fun getCheckedInUsers(): Call<List<User>>
+
     @POST("/inventory/api/v1.0/users/")
     fun createUserWithoutPicture(@Body user: User): Call<ResponseBody>
 }

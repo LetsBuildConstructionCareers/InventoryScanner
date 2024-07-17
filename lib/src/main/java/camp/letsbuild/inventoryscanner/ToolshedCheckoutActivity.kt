@@ -118,7 +118,8 @@ class ToolshedCheckoutItemForUserActivity : ComponentActivity() {
                         .crossfade(true)
                         .build(),
                     contentDescription = "",
-                    loading = { CircularProgressIndicator() }
+                    loading = { CircularProgressIndicator() },
+                    error = { Text("Cannot display image!") }
                 )
                 Button(onClick = { scannerForToolshedCheckoutFinalize.launch(ScanOptions()) }) {
                     Text("Scan Item")
@@ -152,7 +153,8 @@ class ToolshedCheckoutItemFinalizeActivity : ComponentActivity() {
                         .crossfade(true)
                         .build(),
                     contentDescription = "",
-                    loading = { CircularProgressIndicator() }
+                    loading = { CircularProgressIndicator() },
+                    error = { Text("Cannot display image!") }
                 )
                 var waitingOnNetwork by remember { mutableStateOf(false) }
                 if (waitingOnNetwork) {

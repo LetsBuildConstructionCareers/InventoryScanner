@@ -127,7 +127,8 @@ class ToolshedCheckinConfirmUserActivity : ComponentActivity() {
                             .crossfade(true)
                             .build(),
                         contentDescription = "",
-                        loading = { CircularProgressIndicator() }
+                        loading = { CircularProgressIndicator() },
+                        error = { Text("Cannot display image!") }
                     )
                     Button(onClick = {
                         startActivity(checkinItemIntent)
@@ -286,7 +287,8 @@ fun ToolshedAddSingleItemCheckinUI(checkoutId: String?, itemId: String, userId: 
                 .crossfade(true)
                 .build(),
             contentDescription = itemId,
-            loading = { CircularProgressIndicator() }
+            loading = { CircularProgressIndicator() },
+            error = { Text("Cannot display image!") }
         )
         var waitingOnNetwork by remember { mutableStateOf(false) }
         if (waitingOnNetwork) {
@@ -320,7 +322,8 @@ fun ToolshedAddMultipleItemsCheckinUI(
                         .build(),
                     contentDescription = item.name,
                     modifier = Modifier.fillMaxSize(0.25f),
-                    loading = { CircularProgressIndicator() }
+                    loading = { CircularProgressIndicator() },
+                    error = { Text("Cannot display image!") }
                 )
                 Text(item.name)
                 if (scannedMap[item.barcode_id]!!) {

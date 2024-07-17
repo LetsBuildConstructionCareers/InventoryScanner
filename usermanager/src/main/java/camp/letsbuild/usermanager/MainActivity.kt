@@ -24,7 +24,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import camp.letsbuild.inventoryscanner.CheckinUserActivity
 import camp.letsbuild.inventoryscanner.CheckoutUserActivity
+import camp.letsbuild.inventoryscanner.CreateUserWithoutPictureActivity
 import camp.letsbuild.inventoryscanner.InitialBadgeCheckInLandingActivity
+import camp.letsbuild.inventoryscanner.UpdateUserPictureActivity
+import camp.letsbuild.inventoryscanner.launchDisplayCheckedInUsersActivity
 import camp.letsbuild.inventoryscanner.scannerForNewActivity
 import camp.letsbuild.usermanager.ui.theme.InventoryScannerTheme
 import com.journeyapps.barcodescanner.ScanOptions
@@ -34,6 +37,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val scannerForCheckinUserActivity = scannerForNewActivity(this, CheckinUserActivity::class.java)
         val scannerForCheckoutUserActivity = scannerForNewActivity(this, CheckoutUserActivity::class.java)
+        val scannerForCreateUserWithoutPictureActivity = scannerForNewActivity(this, CreateUserWithoutPictureActivity::class.java)
         setContent {
             InventoryScannerTheme {
                 // A surface container using the 'background' color from the theme
@@ -41,7 +45,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    UserManagerUI(scannerForCheckinUserActivity, scannerForCheckoutUserActivity, this)
+                    UserManagerUI(scannerForCheckinUserActivity, scannerForCheckoutUserActivity, scannerForCreateUserWithoutPictureActivity, this)
                 }
             }
         }
@@ -52,6 +56,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun UserManagerUI(scannerForCheckinUserActivity: ActivityResultLauncher<ScanOptions>,
                   scannerForCheckoutUserActivity: ActivityResultLauncher<ScanOptions>,
+                  scannerForCreateUserWithoutPictureActivity: ActivityResultLauncher<ScanOptions>,
                   componentActivity: ComponentActivity, modifier: Modifier = Modifier
         .fillMaxSize()
         .wrapContentSize(Alignment.Center)) {
@@ -76,6 +81,15 @@ fun UserManagerUI(scannerForCheckinUserActivity: ActivityResultLauncher<ScanOpti
             }
             Button(onClick = { scannerForCheckoutUserActivity.launch(ScanOptions()) }) {
                 Text("Badge Check-Out")
+            }
+            Button(onClick = { launchDisplayCheckedInUsersActivity(componentActivity) }) {
+                Text("Display Checked In Users")
+            }
+            Button(onClick = { scannerForCreateUserWithoutPictureActivity.launch(ScanOptions()) }) {
+                Text("Create User without Picture")
+            }
+            Button(onClick = { componentActivity.startActivity(Intent(componentActivity, UpdateUserPictureActivity::class.java)) }) {
+                Text("Update User's Picture")
             }
         }
     }

@@ -31,6 +31,7 @@ import camp.letsbuild.inventoryscanner.RemoveItemFromLocationActivity
 import camp.letsbuild.inventoryscanner.RemoveItemFromVehicleActivity
 import camp.letsbuild.inventoryscanner.ToolshedCheckinActivity
 import camp.letsbuild.inventoryscanner.ToolshedCheckoutActivity
+import camp.letsbuild.inventoryscanner.UpdateUserPictureActivity
 import camp.letsbuild.inventoryscanner.ViewItemsInContainerActivity
 import camp.letsbuild.inventoryscanner.ViewItemsInLocationActivity
 import camp.letsbuild.inventoryscanner.ViewItemsInVehicleActivity
@@ -203,6 +204,9 @@ fun ScanUi(componentActivity: ComponentActivity,
         }
         Button(onClick = { scannerForCreateUserWithoutPictureActivity.launch(ScanOptions()) }) {
             Text("Create User without Picture")
+        }
+        Button(onClick = { componentActivity.startActivity(Intent(componentActivity, UpdateUserPictureActivity::class.java)) }) {
+            Text("Update User's Picture")
         }
         Button(onClick = { launchRetrieveOrRegisterDeviceIdActivity(componentActivity) }) {
             Text("Register This Device")

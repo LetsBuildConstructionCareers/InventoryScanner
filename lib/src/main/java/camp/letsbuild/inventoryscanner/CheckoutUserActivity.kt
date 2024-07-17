@@ -42,30 +42,34 @@ class CheckoutUserActivity : ComponentActivity() {
                 .wrapContentSize(Alignment.Center),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                var userExists by remember { mutableStateOf(true) }
+                var user: User? by remember { mutableStateOf(null) }
                 var checkedUserExists by remember { mutableStateOf(false) }
                 if (!checkedUserExists) {
                     inventoryApi.getUser(userId).enqueue(object : Callback<User> {
                         override fun onResponse(call: Call<User>, response: Response<User>) {
                             checkedUserExists = true
-                            userExists = response.isSuccessful && response.body() != null
+                            if (response.isSuccessful && response.body() != null) {
+                                user = response.body()
+                            }
                         }
 
                         override fun onFailure(call: Call<User>, t: Throwable) {
                             TODO("Not yet implemented")
                         }
                     })
-                }
-                if (userExists) {
+                    CircularProgressIndicator()
+                } else if (user != null) {
                     SubcomposeAsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(getUserPictureUrl(userId))
                             .addHeader(AUTHORIZATION, getAuthorization(this@CheckoutUserActivity))
                             .crossfade(true)
                             .build(),
-                        contentDescription = "",
-                        loading = { CircularProgressIndicator() }
+                        contentDescription = user!!.name,
+                        loading = { CircularProgressIndicator() },
+                        error = { Text("Cannot display picture.") }
                     )
+                    Text(user!!.name)
                     var waitingOnNetwork by remember { mutableStateOf(false) }
                     if (waitingOnNetwork) {
                         CircularProgressIndicator()

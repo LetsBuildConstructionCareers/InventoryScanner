@@ -297,6 +297,26 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".PerformInventoryActivity"
+            android:exported="true"
+            android:label="InventoryScanner"
+            android:theme="@style/Theme.InventoryScanner">
+            <intent-filter>
+                <action android:name="android.intent.action.RUN"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ViewItemsToInventoryActivity"
+            android:exported="true"
+            android:label="InventoryScanner"
+            android:theme="@style/Theme.InventoryScanner">
+            <intent-filter>
+                <action android:name="android.intent.action.RUN"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".InitialBadgeCheckInLandingActivity"
             android:exported="true"
             android:label="InventoryScanner"

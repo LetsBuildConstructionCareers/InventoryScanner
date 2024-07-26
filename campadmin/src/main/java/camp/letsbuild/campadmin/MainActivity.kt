@@ -37,6 +37,7 @@ import camp.letsbuild.inventoryscanner.ViewItemsInLocationActivity
 import camp.letsbuild.inventoryscanner.ViewItemsInVehicleActivity
 import camp.letsbuild.inventoryscanner.launchDisplayCheckedInUsersActivity
 import camp.letsbuild.inventoryscanner.launchDisplayUsersWithOutstandingToolshedCheckoutsActivity
+import camp.letsbuild.inventoryscanner.launchPerformInventoryActivity
 import camp.letsbuild.inventoryscanner.launchRegisterOtherDeviceActivity
 import camp.letsbuild.inventoryscanner.launchRetrieveOrRegisterDeviceIdActivity
 import camp.letsbuild.inventoryscanner.scannerForNewActivity
@@ -183,6 +184,9 @@ fun ScanUi(componentActivity: ComponentActivity,
             componentActivity.startActivity(intent)
         }) {
             Text("Display Items Checked-Out by User")
+        }
+        Button(onClick = { launchPerformInventoryActivity(componentActivity) }) {
+            Text("Perform Inventory")
         }
         Button(onClick = { scannerForDisplayItem.launch(ScanOptions()) }) {
             Text(text = "Scan Existing Item")

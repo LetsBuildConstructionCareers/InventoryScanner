@@ -91,6 +91,31 @@ data class ToolshedCheckin(
     val description: String?
 )
 
+@Serializable
+data class InventoryEvent(
+    val id: Int,
+    val start_unix_time: Int,
+    val complete_unix_time: Int?,
+    val notes: String?
+) : java.io.Serializable
+
+enum class InventoryStatus {
+    GOOD,
+    MISSING,
+    WRONG_LOCATION,
+    NEW_ITEM,
+    DAMAGED,
+    OTHER,
+}
+
+@Serializable
+data class InventoriedItem(
+    val inventory_id: Int,
+    val item_id: String,
+    val status: InventoryStatus,
+    val notes: String?
+) : java.io.Serializable
+
 interface InventoryApi {
     @GET("/inventory/api/v1.0/registered-devices/{android_id}")
     fun getRegisteredDeviceId(@Path("android_id") androidId: String): Call<String>
@@ -122,6 +147,9 @@ interface InventoryApi {
     @GET("/inventory/api/v1.0/item-parent/{barcode_id}")
     fun getParentOfItem(@Path("barcode_id") barcodeId: String): Call<String>
 
+    @GET("/inventory/api/v1.0/items-not-in-containers")
+    fun getAllItemsNotInContainers(): Call<List<Item>>
+
     @GET("/inventory/api/v1.0/containers/{container_id}")
     fun getItemsInContainer(@Path("container_id") containerId: String): Call<List<Item>>
 
@@ -148,6 +176,24 @@ interface InventoryApi {
 
     @DELETE("/inventory/api/v1.0/locations/{container_id}/{item_id}")
     fun removeItemFromLocation(@Path("container_id") containerId: String, @Path("item_id") itemId: String): Call<ResponseBody>
+
+    @GET("/inventory/api/v1.0/inventory-events")
+    fun getInventoryEvents(): Call<List<InventoryEvent>>
+
+    @POST("/inventory/api/v1.0/inventory-events")
+    fun createNewInventoryEvent(): Call<InventoryEvent>
+
+    @GET("/inventory/api/v1.0/inventoried-items-not-in-containers/{inventory_id}")
+    fun getAllInventoriedItemsNotInContainers(@Path("inventory_id") inventoryId: Int): Call<List<InventoriedItem>>
+
+    @GET("/inventory/api/v1.0/inventoried-items-in-container/{inventory_id}/{container_id}")
+    fun getAllInventoriedItemsInContainer(@Path("inventory_id") inventoryId: Int, @Path("container_id") containerId: String): Call<List<InventoriedItem>>
+
+    @GET("/inventory/api/v1.0/inventoried-items/{inventory_id}/{item_id}")
+    fun getInventoriedItem(@Path("inventory_id") inventoryId: Int, @Path("item_id") itemId: String): Call<InventoriedItem>
+
+    @POST("/inventory/api/v1.0/inventoried-items")
+    fun addInventoriedItem(@Body inventoriedItem: InventoriedItem): Call<ResponseBody>
 
     @GET("/inventory/api/v1.0/items")
     fun getItems(): Call<List<Item>>

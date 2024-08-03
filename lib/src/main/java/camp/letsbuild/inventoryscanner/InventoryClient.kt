@@ -189,6 +189,12 @@ interface InventoryApi {
     @GET("/inventory/api/v1.0/inventoried-items-in-container/{inventory_id}/{container_id}")
     fun getAllInventoriedItemsInContainer(@Path("inventory_id") inventoryId: Int, @Path("container_id") containerId: String): Call<List<InventoriedItem>>
 
+    @GET("/inventory/api/v1.0/inventoried-items-uninventoried/{inventory_id}")
+    fun getAllUninventoriedItems(@Path("inventory_id") inventoryId: Int): Call<List<Item>>
+
+    @GET("/inventory/api/v1.0/inventoried-items-not-good/{inventory_id}")
+    fun getAllNotGoodInventoriedItems(@Path("inventory_id") inventoryId: Int): Call<List<InventoriedItem>>
+
     @GET("/inventory/api/v1.0/inventoried-items/{inventory_id}/{item_id}")
     fun getInventoriedItem(@Path("inventory_id") inventoryId: Int, @Path("item_id") itemId: String): Call<InventoriedItem>
 

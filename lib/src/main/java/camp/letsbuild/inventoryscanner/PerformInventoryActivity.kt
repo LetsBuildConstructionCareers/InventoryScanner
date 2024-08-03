@@ -84,7 +84,7 @@ class PerformInventoryActivity : ComponentActivity() {
                 .wrapContentSize(Alignment.Center)) {
                 Text("Select Inventory Below to Continue")
                 for (inventoryEvent in existingInventories) {
-                    Button(onClick = { launchViewItemsToInventoryActivityFromInventoryEvent(this@PerformInventoryActivity, inventoryEvent) }) {
+                    Button(onClick = { launchInventoryMenuActivity(this@PerformInventoryActivity, inventoryEvent) }) {
                         val startTimeString = unixTimeToLocalTime(inventoryEvent.start_unix_time).toString()
                         val endTimeString = if (inventoryEvent.complete_unix_time != null) {
                             unixTimeToLocalTime(inventoryEvent.complete_unix_time).toString()
@@ -97,7 +97,7 @@ class PerformInventoryActivity : ComponentActivity() {
                 Button(onClick = { getInventoryApiInstance(this@PerformInventoryActivity).createNewInventoryEvent().enqueue(object : Callback<InventoryEvent> {
                     override fun onResponse(call: Call<InventoryEvent>, response: Response<InventoryEvent>) {
                         if (response.isSuccessful && response.body() != null) {
-                            launchViewItemsToInventoryActivityFromInventoryEvent(this@PerformInventoryActivity, response.body()!!)
+                            launchInventoryMenuActivity(this@PerformInventoryActivity, response.body()!!)
                         } else {
                             TODO("Not yet implemented")
                         }
@@ -113,6 +113,90 @@ class PerformInventoryActivity : ComponentActivity() {
             }
         }
     }
+}
+
+fun launchInventoryMenuActivity(componentActivity: ComponentActivity, inventoryEvent: InventoryEvent) {
+    val intent = Intent(componentActivity, InventoryMenuActivity::class.java)
+    intent.putExtra("inventoryEvent", inventoryEvent)
+    componentActivity.startActivity(intent)
+}
+
+class InventoryMenuActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val inventoryEvent = (intent.getSerializableExtra("inventoryEvent") as InventoryEvent?) ?: return
+
+        setContent {
+            Column(
+                verticalArrangement = Arrangement.SpaceBetween, modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .fillMaxSize()
+                    .wrapContentSize(Alignment.Center)
+            ) {
+                Button(onClick = { launchViewItemsToInventoryActivityFromInventoryEvent(this@InventoryMenuActivity, inventoryEvent) }) {
+                    Text("View Items To Inventory")
+                }
+                Button(onClick = { launchViewItemsToInventoryActivityForUninventoriedItems(this@InventoryMenuActivity, inventoryEvent) }) {
+                    Text("View Uninventoried Items")
+                }
+                Button(onClick = { launchViewItemsToInventoryActivityForNotGoodItems(this@InventoryMenuActivity, inventoryEvent) }) {
+                    Text("View Not Good Items")
+                }
+                Button(onClick = { /*TODO*/ }, enabled = false) {
+                    Text("Complete Inventory")
+                }
+            }
+        }
+    }
+}
+
+fun launchViewItemsToInventoryActivityForUninventoriedItems(componentActivity: ComponentActivity, inventoryEvent: InventoryEvent) {
+    getInventoryApiInstance(componentActivity).getAllUninventoriedItems(inventoryEvent.id).enqueue(object : Callback<List<Item>> {
+        override fun onResponse(call: Call<List<Item>>, response: Response<List<Item>>) {
+            if (response.isSuccessful && response.body() != null) {
+                val itemList = response.body() ?: emptyList()
+                launchViewItemsToInventoryActivityFromItems(componentActivity, inventoryEvent, null, null, itemList, emptyList())
+            } else {
+                TODO("Not yet implemented")
+            }
+        }
+
+        override fun onFailure(call: Call<List<Item>>, t: Throwable) {
+            TODO("Not yet implemented")
+        }
+    })
+}
+
+fun launchViewItemsToInventoryActivityForNotGoodItems(componentActivity: ComponentActivity, inventoryEvent: InventoryEvent) {
+    val inventoryApi = getInventoryApiInstance(componentActivity)
+    inventoryApi.getAllNotGoodInventoriedItems(inventoryEvent.id).enqueue(object : Callback<List<InventoriedItem>> {
+        override fun onResponse(call: Call<List<InventoriedItem>>, response: Response<List<InventoriedItem>>) {
+            if (response.isSuccessful && response.body() != null) {
+                val inventoriedItemList = response.body() ?: emptyList()
+                inventoryApi.getItems().enqueue(object : Callback<List<Item>> {
+                    override fun onResponse(call: Call<List<Item>>, response: Response<List<Item>>) {
+                        if (response.isSuccessful && response.body() != null) {
+                            val inventoriedItemSet = inventoriedItemList.map { it.item_id }.toSet()
+                            val itemList = (response.body() ?: emptyList()).filter { it.barcode_id in inventoriedItemSet }
+                            launchViewItemsToInventoryActivityFromItems(componentActivity, inventoryEvent, null, null, itemList, inventoriedItemList, true)
+                        } else {
+                            TODO("Not yet implemented")
+                        }
+                    }
+
+                    override fun onFailure(call: Call<List<Item>>, t: Throwable) {
+                        TODO("Not yet implemented")
+                    }
+                })
+            } else {
+                TODO("Not yet implemented")
+            }
+        }
+
+        override fun onFailure(call: Call<List<InventoriedItem>>, t: Throwable) {
+            TODO("Not yet implemented")
+        }
+    })
 }
 
 fun launchViewItemsToInventoryActivityFromInventoryEvent(componentActivity: ComponentActivity, inventoryEvent: InventoryEvent) {
@@ -203,13 +287,14 @@ fun launchViewItemsToInventoryActivityFromSingleItem(componentActivity: Componen
     })
 }
 
-fun launchViewItemsToInventoryActivityFromItems(componentActivity: ComponentActivity, inventoryEvent: InventoryEvent, itemToInventory: Item?, inventoriedItem: InventoriedItem?, items: List<Item>, inventoriedItems: List<InventoriedItem>) {
+fun launchViewItemsToInventoryActivityFromItems(componentActivity: ComponentActivity, inventoryEvent: InventoryEvent, itemToInventory: Item?, inventoriedItem: InventoriedItem?, items: List<Item>, inventoriedItems: List<InventoriedItem>, forNotGoodItems: Boolean = false) {
     val intent = Intent(componentActivity, ViewItemsToInventoryActivity::class.java)
     intent.putExtra("itemToInventory", itemToInventory)
     intent.putExtra("inventoriedItem", inventoriedItem)
     intent.putExtra("inventoryEvent", inventoryEvent)
     intent.putExtra("itemList", items.toTypedArray())
     intent.putExtra("inventoriedItemList", inventoriedItems.toTypedArray())
+    intent.putExtra("forNotGoodItems", forNotGoodItems)
     componentActivity.startActivity(intent)
 }
 
@@ -242,6 +327,7 @@ class ViewItemsToInventoryActivity : ComponentActivity() {
         val inventoryEvent = (intent.getSerializableExtra("inventoryEvent") as InventoryEvent?) ?: return
         val itemList = (intent.getSerializableExtra("itemList") as Array<Item>?) ?: return
         val inventoriedItemList = (intent.getSerializableExtra("inventoriedItemList") as Array<InventoriedItem>?) ?: return
+        val forNotGoodItems = intent.getSerializableExtra("forNotGoodItems") as Boolean? ?: return
         val scanner = scannerForViewItemsToInventoryActivity(this, inventoryEvent)
 
         setContent { ViewItemsToInventoryUI(
@@ -249,6 +335,7 @@ class ViewItemsToInventoryActivity : ComponentActivity() {
             inventoriedItem,
             itemList,
             inventoriedItemList,
+            forNotGoodItems,
             inventoryEvent,
             scanner,
             onResumeListener,
@@ -299,6 +386,7 @@ fun ViewItemsToInventoryUI(itemToInventory: Item?,
                            inventoriedItemToInventory: InventoriedItem?,
                            childItems: Array<Item>,
                            childInventoriedItems: Array<InventoriedItem>,
+                           forNotGoodItems: Boolean,
                            inventoryEvent: InventoryEvent,
                            scannerForViewItemsToInventory: ActivityResultLauncher<ScanOptions>,
                            onResumeListener: OnResumeListener,
@@ -309,44 +397,30 @@ fun ViewItemsToInventoryUI(itemToInventory: Item?,
     var inventoriedItemsRequiresUpdate by remember { mutableStateOf(true) }
     onResumeListener.onResume = { inventoriedItemsRequiresUpdate = true }
     val childInventoriedItemsMap = remember { mutableStateMapOf(*childInventoriedItems.map { item -> item.item_id to item }.toTypedArray()) }
+    fun updateChildInventoriedItemsMap(apiCall: (InventoryApi) -> Call<List<InventoriedItem>>) {
+        apiCall(getInventoryApiInstance(componentActivity)).enqueue(object : Callback<List<InventoriedItem>> {
+            override fun onResponse(call: Call<List<InventoriedItem>>, response: Response<List<InventoriedItem>>) {
+                if (response.isSuccessful) {
+                    val inventoriedItems = response.body() ?: emptyList()
+                    childInventoriedItemsMap.clear()
+                    childInventoriedItemsMap.putAll(inventoriedItems.associateBy { inventoriedItem -> inventoriedItem.item_id })
+                    inventoriedItemsRequiresUpdate = false
+                } else {
+                    TODO("Not yet implemented")
+                }
+            }
+
+            override fun onFailure(call: Call<List<InventoriedItem>>, t: Throwable) {
+                TODO("Not yet implemented")
+            }
+        })
+    }
     if (inventoriedItemsRequiresUpdate && itemToInventory != null) {
-        getInventoryApiInstance(componentActivity)
-            .getAllInventoriedItemsInContainer(inventoryEvent.id, itemToInventory.barcode_id)
-            .enqueue(object : Callback<List<InventoriedItem>> {
-                override fun onResponse(call: Call<List<InventoriedItem>>, response: Response<List<InventoriedItem>>) {
-                    if (response.isSuccessful) {
-                        val inventoriedItems = response.body() ?: emptyList()
-                        childInventoriedItemsMap.clear()
-                        childInventoriedItemsMap.putAll(inventoriedItems.associateBy { inventoriedItem -> inventoriedItem.item_id })
-                        inventoriedItemsRequiresUpdate = false
-                    } else {
-                        TODO("Not yet implemented")
-                    }
-                }
-
-                override fun onFailure(call: Call<List<InventoriedItem>>, t: Throwable) {
-                    TODO("Not yet implemented")
-                }
-            })
+        updateChildInventoriedItemsMap { it.getAllInventoriedItemsInContainer(inventoryEvent.id, itemToInventory.barcode_id) }
+    } else if (inventoriedItemsRequiresUpdate && !forNotGoodItems) {
+        updateChildInventoriedItemsMap { it.getAllInventoriedItemsNotInContainers(inventoryEvent.id) }
     } else if (inventoriedItemsRequiresUpdate) {
-        getInventoryApiInstance(componentActivity)
-            .getAllInventoriedItemsNotInContainers(inventoryEvent.id)
-            .enqueue(object : Callback<List<InventoriedItem>> {
-                override fun onResponse(call: Call<List<InventoriedItem>>, response: Response<List<InventoriedItem>>) {
-                    if (response.isSuccessful) {
-                        val inventoriedItems = response.body() ?: emptyList()
-                        childInventoriedItemsMap.clear()
-                        childInventoriedItemsMap.putAll(inventoriedItems.associateBy { inventoriedItem -> inventoriedItem.item_id })
-                        inventoriedItemsRequiresUpdate = false
-                    } else {
-                        TODO("Not yet implemented")
-                    }
-                }
-
-                override fun onFailure(call: Call<List<InventoriedItem>>, t: Throwable) {
-                    TODO("Not yet implemented")
-                }
-            })
+        updateChildInventoriedItemsMap { it.getAllNotGoodInventoriedItems(inventoryEvent.id) }
     }
     Column (verticalArrangement = Arrangement.SpaceBetween, modifier = Modifier.verticalScroll(
         rememberScrollState()

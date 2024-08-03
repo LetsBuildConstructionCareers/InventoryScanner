@@ -1,6 +1,5 @@
 package camp.letsbuild.inventoryscanner
 
-import android.app.Application.ActivityLifecycleCallbacks
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -456,7 +455,6 @@ fun ViewItemsToInventoryUI(itemToInventory: Item?,
             }
             TextField(value = notes, onValueChange = { notes = it}, label = { Text("Notes") }, placeholder = { Text("Enter any additional notes") })
         }
-        //val childInventoriedItemsMap = childInventoriedItems.associateBy { inventoriedItem -> inventoriedItem.item_id }
         val defaultCardColors: CardColors = CardDefaults.cardColors()
         val goodCardColors = CardDefaults.cardColors(containerColor = Color.Green)
         val badCardColors = CardDefaults.cardColors(containerColor = Color.Red)

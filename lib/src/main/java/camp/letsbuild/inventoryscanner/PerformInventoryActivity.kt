@@ -83,7 +83,8 @@ class PerformInventoryActivity : ComponentActivity() {
                 .wrapContentSize(Alignment.Center)) {
                 Text("Select Inventory Below to Continue")
                 for (inventoryEvent in existingInventories) {
-                    Button(onClick = { launchInventoryMenuActivity(this@PerformInventoryActivity, inventoryEvent) }) {
+                    Button(onClick = { launchInventoryMenuActivity(this@PerformInventoryActivity, inventoryEvent) },
+                        enabled = inventoryEvent.complete_unix_time == null) {
                         val startTimeString = unixTimeToLocalTime(inventoryEvent.start_unix_time).toString()
                         val endTimeString = if (inventoryEvent.complete_unix_time != null) {
                             unixTimeToLocalTime(inventoryEvent.complete_unix_time).toString()
@@ -141,7 +142,40 @@ class InventoryMenuActivity : ComponentActivity() {
                 Button(onClick = { launchViewItemsToInventoryActivityForNotGoodItems(this@InventoryMenuActivity, inventoryEvent) }) {
                     Text("View Not Good Items")
                 }
-                Button(onClick = { /*TODO*/ }, enabled = false) {
+                var isAnyUninventoriedItemsLeft by remember { mutableStateOf(false) }
+                getInventoryApiInstance(this@InventoryMenuActivity)
+                    .getAllUninventoriedItems(inventoryEvent.id)
+                    .enqueue(object : Callback<List<Item>> {
+                        override fun onResponse(call: Call<List<Item>>, response: Response<List<Item>>) {
+                            if (response.isSuccessful && response.body() != null) {
+                                isAnyUninventoriedItemsLeft = (response.body() ?: emptyList()).isEmpty()
+                            } else {
+                                TODO("Not yet implemented")
+                            }
+                        }
+
+                        override fun onFailure(call: Call<List<Item>>, t: Throwable) {
+                            TODO("Not yet implemented")
+                        }
+                    })
+                Button(onClick = {
+                    val newInventoryEvent = inventoryEvent.copy(complete_unix_time = (System.currentTimeMillis() / 1000).toInt())
+                    getInventoryApiInstance(this@InventoryMenuActivity)
+                        .updateInventoryEventCompleteTimeAndNotes(newInventoryEvent)
+                        .enqueue(object : Callback<ResponseBody> {
+                            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+                                if (response.isSuccessful) {
+                                    finish()
+                                } else {
+                                    TODO("Not yet implemented")
+                                }
+                            }
+
+                            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                                TODO("Not yet implemented")
+                            }
+                        })
+                }, enabled = isAnyUninventoriedItemsLeft) {
                     Text("Complete Inventory")
                 }
             }

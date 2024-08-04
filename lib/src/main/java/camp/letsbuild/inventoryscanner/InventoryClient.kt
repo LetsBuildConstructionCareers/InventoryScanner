@@ -21,6 +21,7 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.Multipart
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Part
@@ -182,6 +183,9 @@ interface InventoryApi {
 
     @POST("/inventory/api/v1.0/inventory-events")
     fun createNewInventoryEvent(): Call<InventoryEvent>
+
+    @PATCH("/inventory/api/v1.0/inventory-events")
+    fun updateInventoryEventCompleteTimeAndNotes(@Body inventoryEvent: InventoryEvent): Call<ResponseBody>
 
     @GET("/inventory/api/v1.0/inventoried-items-not-in-containers/{inventory_id}")
     fun getAllInventoriedItemsNotInContainers(@Path("inventory_id") inventoryId: Int): Call<List<InventoriedItem>>
